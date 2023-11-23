@@ -1,0 +1,39 @@
+{
+  "packages": [
+    "nodejs@latest",
+    "poetry@latest",
+    "python3@latest",
+    "nodePackages.pnpm@latest"
+  ],
+  "env": {
+    "DEVBOX_PYPROJECT_DIR": "$PWD/agent"
+  },
+  "shell": {
+    "init_hook": [
+      "echo 'Welcome to devbox!' > /dev/null"
+    ],
+    "scripts": {
+      "agent": [
+        "cd agent && poetry run uvicorn gpt_agent.api:app --reload"
+      ],
+      "browser": [
+        "pnpm --dir browser-extension dev"
+      ],
+      "install": [
+        "pnpm --dir browser-extension install",
+        "cd agent",
+        "poetry install",
+        "[ -e '.env' ] || (cp sample.env .env && echo '.env file has been created, PLEASE CHECK THAT ALL PROPERTIES ARE PROPERLY SET!')"
+      ],
+      "build": [
+        "cd browser-extension",
+        "pnpm build",
+        "cd dist",
+        "[ ! -e browser-copilot.zip ] || rm browser-copilot.zip",
+        "zip -r browser-copilot.zip *",
+        "cd ../../agent",
+        "poetry build"
+      ]
+    }
+  }
+}

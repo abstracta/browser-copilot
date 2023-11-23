@@ -1,0 +1,32 @@
+{
+  "name": "browser-copilot",
+  "description": "Browser Copilot allows you to use existing or custom-built AI assistants to help you in everyday web application tasks",
+  "private": true,
+  "version": "0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build"
+  },
+  "dependencies": {
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.3.5",
+    "vue": "^3.3.9",
+    "vue-tabler-icons": "^2.21.0"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "^13.0.7",
+    "@types/webextension-polyfill": "^0.10.7",
+    "@vitejs/plugin-vue": "^4.5.0",
+    "highlight.js": "^11.9.0",
+    "markdown-it": "^13.0.2",
+    "sass": "^1.69.5",
+    "three-dots": "^0.3.2",
+    "typescript": "^4.9.5",
+    "vite": "^4.5.0",
+    "vite-plugin-web-extension": "^3.2.0",
+    "vue-tsc": "^1.8.22",
+    "webextension-polyfill": "^0.10.0"
+  }
+}
