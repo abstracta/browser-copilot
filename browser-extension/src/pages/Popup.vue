@@ -13,7 +13,6 @@ const messages = ref<ChatMessage[]>([])
 
 
 onBeforeMount(() => {
-  console.log("CONNECT " + new Date().toISOString())
   port = browser.runtime.connect()
   port.onMessage.addListener(async (m: any, port: browser.Runtime.Port) => {
     if (m.type === "activate") {
@@ -33,13 +32,9 @@ onBeforeMount(() => {
       }
     }
   })
-  port.onDisconnect.addListener(() => {
-    console.log("DISCONNECT " + new Date().toISOString())
-  })
 })
 
 onUnmounted(() => {
-  console.log("UNMOUNTED " + new Date().toISOString())
   port.disconnect()
 })
 

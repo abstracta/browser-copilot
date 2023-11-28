@@ -1,10 +1,11 @@
-import { defineConfig } from "vite";
-import vue from "@vitejs/plugin-vue";
-import webExtension, { readJsonFile } from "vite-plugin-web-extension";
+import { defineConfig } from "vite"
+import vue from "@vitejs/plugin-vue"
+import webExtension, { readJsonFile } from "vite-plugin-web-extension"
+import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 
 function generateManifest() {
-  const manifest = readJsonFile("src/manifest.json");
-  const pkg = readJsonFile("package.json");
+  const manifest = readJsonFile("src/manifest.json")
+  const pkg = readJsonFile("package.json")
   return {
     name: pkg.name,
     description: pkg.description,
@@ -15,6 +16,11 @@ function generateManifest() {
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  esbuild: {
+    supported: {
+      'top-level-await': true
+    },
+  },
   plugins: [
     vue(),
     webExtension({
@@ -24,6 +30,9 @@ export default defineConfig({
       webExtConfig: {
         startUrl: "https://github.com/abstracta/browser-copilot"
       }
+    }),
+    VueI18nPlugin({
+      jitCompilation: true
     }),
   ],
 });

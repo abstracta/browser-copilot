@@ -12,7 +12,7 @@ let activeTabs: Set<number> = new Set()
 const createToggleContextMenu = () => {
   browser.contextMenus.create({
     id: "toggle-browser-copilot",
-    title: "Toggle Browser Copilot",
+    title: "Browser Copilot",
     contexts: ["all"]
   })
 }
@@ -94,7 +94,6 @@ const toggleSidebar = (tabId: number) => {
 }
 
 browser.runtime.onInstalled.addListener(async () => {
-  console.log("INSTALL " + new Date().toISOString())
   createToggleContextMenu()
   if (import.meta.env.DEV) {
     let agent = await Agent.fromUrl("http://localhost:8000")
@@ -107,11 +106,9 @@ browser.runtime.onConnect.addListener(async (port) => {
   let tabId = port.sender?.tab?.id!
   tabPort.set(tabId, port)
   port.onMessage.addListener(async (msg: any, _) => {
-    console.log("BG PORT MSG " + new Date().toISOString())
     onPopupMessage(msg, tabId, port)
   })
   port.onDisconnect.addListener(() => {
-    console.log("BG DISCONNECT " + new Date().toISOString())
     tabPort.delete(tabId)
     activeTabs.delete(tabId)
   })
@@ -120,12 +117,10 @@ browser.runtime.onConnect.addListener(async (port) => {
 browser.action.onClicked.addListener((tab, _) => toggleSidebar(tab.id!))
 
 browser.contextMenus.onClicked.addListener((_, tab) => {
-  console.log("TOGGLE " + new Date().toISOString())
   toggleSidebar(tab!.id!);
 })
 
 browser.webRequest.onCompleted.addListener(async (req) => {
-  console.log("REQ " + new Date().toISOString())
   if (req.initiator?.startsWith("chrome-extension://")) {
     return
   }

@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { ref, watch, onBeforeMount } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { getPrompts, Prompt, deletePrompt, savePrompt } from '../scripts/prompt-repository'
 import Modal from './Modal.vue'
 import ModalForm from './ModalForm.vue'
@@ -8,6 +9,7 @@ import NewPromptButton from './NewPromptButton.vue'
 
 const props = defineProps<{ agentId: string, agentName: string, agentLogo: string, show: boolean }>()
 const emit = defineEmits(['close'])
+const { t } = useI18n()
 const prompts = ref<Prompt[]>()
 const editingPrompt = ref<Prompt>()
 const deletingPromptIndex = ref(-1)
@@ -60,7 +62,7 @@ const confirmPromptRemoval = async () => {
 </script>
 
 <template>
-  <Modal :title="agentName + ' Config'" :show="show" @close="close">
+  <Modal :title="t('title', { agentName: agentName })" :show="show" @close="close">
     <NewPromptButton text="" :isLargeIcon="true" :agent-id="agentId" @save="onNewPrompt" />
     <div class="prompt-list">
       <div v-for="(prompt, index) in prompts" :key="prompt.name" class="list-row">
@@ -75,12 +77,11 @@ const confirmPromptRemoval = async () => {
     @saved="onPromptUpdate" :show="editingPrompt !== undefined" :agent-id="agentId" />
   <ModalForm title="Delete prompt" :show="deletingPromptIndex >= 0" @close="closePromptDeletionConfirmation"
     @save="confirmPromptRemoval" button-text="Delete">
-    Are you sure you want to delete the prompt {{ prompts ? prompts[deletingPromptIndex].name : '' }}?
+    {{ t('deleteConfirmation', { promptName: prompts ? prompts[deletingPromptIndex].name : '' }) }}
   </ModalForm>
 </template>
 
 <style>
-
 div.prompt-item-actions {
   display: flex;
   flex-direction: row;
@@ -101,3 +102,16 @@ div.prompt-item {
   color: white;
 }
 </style>
+
+<i18n>
+{
+  "en": {
+    "title": "{agentName} config",
+    "deleteConfiguration": "Are you sure you want to delete the prompt {promptName}?"
+  },
+  "es": {
+    "title": "Configuración de {agentName}",
+    "deleteConfirmation": "¿Estás seguro de borrar el prompt {promptName}?"
+  }
+}
+</i18n>

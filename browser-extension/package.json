@@ -13,9 +13,11 @@
     "postcss": "^8.4.31",
     "tailwindcss": "^3.3.5",
     "vue": "^3.3.9",
+    "vue-i18n": "9",
     "vue-tabler-icons": "^2.21.0"
   },
   "devDependencies": {
+    "@intlify/unplugin-vue-i18n": "^1.5.0",
     "@types/markdown-it": "^13.0.7",
     "@types/webextension-polyfill": "^0.10.7",
     "@vitejs/plugin-vue": "^4.5.0",

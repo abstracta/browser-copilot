@@ -1,7 +1,8 @@
 <script lang="ts" setup>
 import { ref, watch } from 'vue'
-import TextArea from './TextArea.vue'
+import { useI18n } from 'vue-i18n'
 import { getPrompts, Prompt } from '../scripts/prompt-repository'
+import TextArea from './TextArea.vue'
 
 const props = defineProps<{
   canSendMessage: boolean,
@@ -10,6 +11,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'sendMessage', text: string): void
 }>()
+const { t } = useI18n()
 const inputText = ref('')
 const promptList = ref<Prompt[]>([])
 const selectedPromptIndex = ref(0)
@@ -86,9 +88,9 @@ const loadPromptList = async () => {
           @click="e => usePrompt(index, e)" @mousedown="e => e.preventDefault()">{{ prompt.name }}</div>
       </div>
     </div>
-    <TextArea class="message-input" placeholder="Type / to use a prompt, or type a message..." v-model="inputText"
-      @keydown="onKeydown" focused :cursor-position="inputPosition" />
-    <button class="send-button" @click="sendMessage"><brand-telegram-icon/></button>
+    <TextArea class="message-input" :placeholder="t('placeholder')" v-model="inputText" @keydown="onKeydown" focused
+      :cursor-position="inputPosition" />
+    <button class="send-button" @click="sendMessage"><brand-telegram-icon /></button>
   </div>
 </template>
 
@@ -112,7 +114,7 @@ const loadPromptList = async () => {
   outline: none;
   align-self: center;
   margin-left: 5px;
-  height: 20px!important;
+  height: 20px !important;
 }
 
 .prompt-list-popup {
@@ -136,3 +138,14 @@ const loadPromptList = async () => {
   color: var(--accent-color);
 }
 </style>
+
+<i18n>
+{
+  "en": {
+    "placeholder": "Type / to use a prompt, or type a message..."
+  },
+  "es": {
+    "placeholder": "Usa / para usar un prompt, o escribe un mensaje..."
+  }
+}
+</i18n>

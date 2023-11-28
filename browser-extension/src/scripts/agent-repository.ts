@@ -31,6 +31,6 @@ const updateAgents = async (agents: Agent[]) => {
 
 export const removeAgent = async (agentId: string): Promise<void> => {
   let agents = await findAllAgents()
-  agents = agents.filter(a => a.manifest.id === agentId)
+  agents = agents.filter(a => a.manifest.id !== agentId)
   updateAgents(agents)
 }

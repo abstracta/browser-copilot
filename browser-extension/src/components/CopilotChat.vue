@@ -16,10 +16,11 @@ export class ChatMessage {
 
 <script lang="ts" setup>
 import { ref, nextTick, watch, computed } from 'vue'
+import CopilotName from "../components/CopilotName.vue"
 import Message from "../components/Message.vue"
 import ChatInput from "../components/ChatInput.vue"
 import CopilotConfig from "../components/CopilotConfig.vue"
-import Footer from "../components/Footer.vue";
+import Footer from "../components/Footer.vue"
 
 const props = defineProps<{ agentId: string, agentName: string, agentLogo: string, messages: ChatMessage[] }>()
 const emit = defineEmits<{
@@ -52,7 +53,9 @@ const lastMessage = computed((): ChatMessage => props.messages[props.messages.le
   <div class="copilot-chat">
     <div class="header items-center py-3 px-1.5">
       <img :src="agentLogo" class="agent-icon" />
-      <div class="text-[20px] font-semibold">{{ agentName }} <span class="font-light">Copilot</span></div>
+      <div class="text-[20px] font-semibold">
+        <CopilotName :agentName="agentName" />
+      </div>
       <div class="actions">
         <button @click="showConfig = true"><settings-icon /></button>
         <button @click="$emit('close')"><x-icon /></button>
@@ -62,10 +65,10 @@ const lastMessage = computed((): ChatMessage => props.messages[props.messages.le
     <div class="chat-container py-3">
       <div class="chat-messages" ref="messagesDiv">
         <Message :text="message.text" :is-user="message.isUser" v-for="message in messages" :key="message.id"
-          :agent-logo="agentLogo" :agent-id="agentId" />
+          :agent-logo="agentLogo" :agent-name="agentName" :agent-id="agentId" />
       </div>
       <ChatInput @send-message="onUserMessage" :can-send-message="lastMessage.text !== ''" :agent-id="agentId" />
-      <Footer/>
+      <Footer />
     </div>
     <CopilotConfig :show="showConfig" @close="showConfig = false" :agent-id="agentId" :agent-name="agentName"
       :agent-logo="agentLogo" />
@@ -77,6 +80,7 @@ const lastMessage = computed((): ChatMessage => props.messages[props.messages.le
   width: 25px;
   height: 25px;
 }
+
 /* icon-tabler override */
 .icon-tabler {
   width: 25px;
@@ -107,6 +111,7 @@ const lastMessage = computed((): ChatMessage => props.messages[props.messages.le
   color: var(--accent-color);
   cursor: pointer;
 }
+
 /* icon-tabler override */
 </style>
 <style scoped>
@@ -130,4 +135,5 @@ const lastMessage = computed((): ChatMessage => props.messages[props.messages.le
   padding: var(--half-spacing);
   display: flex;
   flex-direction: column;
-}</style>
+}
+</style>
