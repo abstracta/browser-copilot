@@ -11,8 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Install devbox
-        uses: jetpack-io/devbox-install-action@v0.7.0
+      - uses: jetpack-io/devbox-install-action@v0.7.0
+        with:
+          enable-cache: 'true'
       - name: check version
         run: .github/semver-check.sh ${{ inputs.version }}
       - name: create release draft
