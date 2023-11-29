@@ -18,7 +18,7 @@ Here are a few examples of what these copilots can do:
 
 ## Usage
 
-1. Install the extension in your browser by downloading the latest version from the [releases](https://github.com/abstracta/browser-copilot/release). To install an extension from a zip file you need to go to your browser "Manage Extension" screen, enable developer mode, and drag and drop the extension zip file.
+1. Install the extension in your browser by downloading the latest version from the [releases](https://github.com/abstracta/browser-copilot/releases). To install an extension from a zip file you need to go to your browser "Manage Extension" screen, enable developer mode, and drag and drop the extension zip file.
 2. Open the extension by clicking on its icon and add a new copilot by providing its base URL. The base URL should correspond to the location of `manifest.json` and `logo.png`, for example: `http://localhost:8000` if your agent is running locally.
 3. Start a new chat by clicking on a configured copilot, or, if the copilot has automatic activation, just use your browser and the copilot chat will automatically appear when the copilot activates.
 4. Save your preferred prompts directly from the chat. To quickly access them later, simply type '/' in the chat input.
