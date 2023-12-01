@@ -120,7 +120,7 @@ const lastMessage = computed((): ChatMessage => props.messages[props.messages.le
 }
 
 .chat-container {
-  height: calc(100% - var(--content-space));
+  height: calc(100% - var(--content-space) - 20px);
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -128,7 +128,7 @@ const lastMessage = computed((): ChatMessage => props.messages[props.messages.le
 }
 
 .chat-messages {
-  height: calc(100% - 110px);
+  height: 100%;
   overflow-y: auto;
   margin-bottom: var(--spacing);
   border-radius: var(--spacing);
