@@ -1,51 +1,56 @@
 <script lang="ts" setup>
-import { ref, onBeforeMount, onUnmounted, nextTick } from 'vue'
+import { ref, onBeforeMount, nextTick } from 'vue'
 import browser from "webextension-polyfill"
+import { BrowserMessage, ToggleSidebar, ContentMessage, DisplaySidebar, ActivatedAgent, AiMessage, ServiceMessage, UserMessage, ActivateAgent, CloseSidebar } from "../scripts/browser-message"
 import CopilotChat, { ChatMessage } from "../components/CopilotChat.vue"
 import CopilotList from "../components/CopilotList.vue"
 
+
+let displaying = false
 const agentId = ref<string>("")
 const agentLogo = ref<string>("")
 const agentName = ref<string>("")
-let port: browser.Runtime.Port
 const lastResizePos = ref<number>()
 const messages = ref<ChatMessage[]>([])
 
-
 onBeforeMount(() => {
-  port = browser.runtime.connect()
-  port.onMessage.addListener(async (m: any, port: browser.Runtime.Port) => {
-    if (m.type === "activate") {
-      agentId.value = m.agentId
-      agentName.value = m.agentName
-      agentLogo.value = m.agentLogo
+  browser.runtime.onMessage.addListener(async (m: any) => {
+    let msg = BrowserMessage.fromJsonObject(m)
+    if (msg instanceof ToggleSidebar) {
+      displaying = !displaying
+    } else if (msg instanceof ActivatedAgent) {
+      agentId.value = msg.agentId
+      agentName.value = msg.agentName
+      agentLogo.value = msg.agentLogo
       messages.value.push(new ChatMessage('', false))
-      await nextTick(() => {
-        port.postMessage({ type: "activated" })
-      })
-    } else if (m.type === "aiMessage") {
+      if (!displaying) {
+        await nextTick(async () => {
+          await sendToServiceWorker(new DisplaySidebar())
+        })
+      }
+    } else if (msg instanceof AiMessage) {
       let lastMessage = messages.value[messages.value.length - 1]
       if (lastMessage.text === '') {
-        lastMessage.text = m.text
+        lastMessage.text = msg.text
       } else {
-        messages.value.push(new ChatMessage(m.text, false))
+        messages.value.push(new ChatMessage(msg.text, false))
       }
     }
   })
 })
 
-onUnmounted(() => {
-  port.disconnect()
-})
-
-const onUserMessage = (msg: string) => {
-  messages.value.push(new ChatMessage(msg, true))
-  messages.value.push(new ChatMessage('', false))
-  port.postMessage({ type: "userMessage", text: msg })
+const sendToServiceWorker = async (msg: ServiceMessage) => {
+  await browser.runtime.sendMessage(msg)
 }
 
-const onActivateAgent = (agentId: string) => {
-  port.postMessage({ type: "activateAgent", agentId: agentId })
+const onUserMessage = async (msg: string) => {
+  messages.value.push(new ChatMessage(msg, true))
+  messages.value.push(new ChatMessage('', false))
+  await sendToServiceWorker(new UserMessage(msg))
+}
+
+const onActivateAgent = async (agentId: string) => {
+  await sendToServiceWorker(new ActivateAgent(agentId))
 }
 
 const startResize = (e: MouseEvent) => {
@@ -60,7 +65,7 @@ const resize = async (e: MouseEvent) => {
   let delta = lastResizePos.value! - e.screenX
   lastResizePos.value = e.screenX
   let tab = await browser.tabs.getCurrent()
-  await browser.tabs.sendMessage(tab.id!, { type: "sidebar-resize", delta: delta })
+  await browser.tabs.sendMessage(tab.id!, { type: "resizeSidebar", delta: delta })
 }
 
 const endResize = () => {
@@ -70,12 +75,12 @@ const endResize = () => {
 }
 
 const closeSidebar = () => {
-  port.postMessage({ type: "closeSidebar" })
+  sendToServiceWorker(new CloseSidebar())
 }
 </script>
 
 <template>
-  <div class="sidebar">
+  <div class="sidebar" ref="sidebar">
     <div class="resizer" @mousedown="startResize" />
     <CopilotChat v-if="agentId" :messages="messages" :agent-id="agentId" :agent-name="agentName" :agent-logo="agentLogo"
       @userMessage="onUserMessage" @close="closeSidebar" />

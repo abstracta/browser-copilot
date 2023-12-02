@@ -22,7 +22,7 @@ export const addAgent = async (agent: Agent): Promise<void> => {
   }
   agents.push(agent)
   agents.sort((a1, a2) => a1.manifest.id < a2.manifest.id ? -1 : 1)
-  updateAgents(agents)
+  await updateAgents(agents)
 }
 
 const updateAgents = async (agents: Agent[]) => {
@@ -32,5 +32,5 @@ const updateAgents = async (agents: Agent[]) => {
 export const removeAgent = async (agentId: string): Promise<void> => {
   let agents = await findAllAgents()
   agents = agents.filter(a => a.manifest.id !== agentId)
-  updateAgents(agents)
+  await updateAgents(agents)
 }

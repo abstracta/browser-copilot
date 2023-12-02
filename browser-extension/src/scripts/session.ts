@@ -1,43 +1,41 @@
 import { Agent, RecordInteractionRuleAction } from "./agent"
 import { fetchJson } from "./http"
 import browser from "webextension-polyfill"
+import { ActivatedAgent, AiMessage } from "./browser-message"
 
 export class TabSession {
   id: string
   tabId: number
   url: string
   agent: Agent
-  port: browser.Runtime.Port
 
-  constructor(id: string, agent: Agent, tabId: number, url: string, port: browser.Runtime.Port) {
+  constructor(id: string, tabId: number, agent: Agent, url: string) {
     this.id = id
-    this.agent = agent
     this.tabId = tabId!
+    this.agent = agent
     this.url = url
-    this.port = port
+  }
+
+  public static fromJsonObject(obj: any): TabSession {
+    return new TabSession(obj.id, obj.tabId, Agent.fromJsonObject(obj.agent), obj.url)
   }
 
   public async activate(url: string): Promise<void> {
-    this.sendMessageToTab({ type: "activate", agentId: this.agent.manifest.id, agentName: this.agent.manifest.name, agentLogo: this.agent.logo })
-    this.sendMessageToTab(this.aiMessage(this.agent.manifest.welcomeMessage))
-    this.port.onMessage.addListener(async (msg: any, _) => {
-      if (msg.type === "userMessage") {
-        let answer = await this.agent.ask(msg.text, this.id)
-        this.sendMessageToTab(this.aiMessage(answer))
-      }
-    })
+    await this.sendMessageToTab(new ActivatedAgent(this.agent.manifest.id, this.agent.manifest.name, this.agent.logo))
+    await this.sendMessageToTab(new AiMessage(this.agent.manifest.welcomeMessage))
     let httpAction = this.agent.activationAction?.httpRequest
     if (httpAction) {
       await fetchJson(this.solveUrlTemplate(httpAction.url, url), { method: httpAction.method })
     }
   }
 
-  private aiMessage(summary: string): any {
-    return { type: "aiMessage", text: summary }
+  public async processUserMessage(msg: string) {
+    let answer = await this.agent.ask(msg, this.id)
+    await this.sendMessageToTab(new AiMessage(answer))
   }
 
-  public sendMessageToTab(message: any): void {
-    this.port.postMessage(message)
+  private async sendMessageToTab(message: any): Promise<void> {
+    await browser.tabs.sendMessage(this.tabId, message)
   }
 
   private solveUrlTemplate(urlTemplate: string, baseUrl: string): string {
@@ -48,7 +46,7 @@ export class TabSession {
   }
 
   public async processInteraction(req: browser.WebRequest.OnCompletedDetailsType): Promise<void> {
-    const actions = await this.agent.findMatchingActions(req)
+    const actions = this.agent.findMatchingActions(req)
     for (const a of actions) {
       if (a.recordInteraction) {
         await this.recordInteraction(req, a.recordInteraction)
@@ -60,7 +58,7 @@ export class TabSession {
     let interactionDetail = await this.findInteraction(req, action)
     let summary = await this.agent.solveInteractionSummary(interactionDetail, this.id)
     if (summary) {
-      this.sendMessageToTab(this.aiMessage(summary))
+      this.sendMessageToTab(new AiMessage(summary))
     }
   }
 

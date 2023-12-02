@@ -1,13 +1,10 @@
 import browser from "webextension-polyfill"
 import { Agent, AgentRuleCondition, AddHeaderRuleAction } from "./scripts/agent"
 import { findAgentById, findAllAgents, addAgent } from "./scripts/agent-repository"
+import { findSessionByTabId, saveSession, removeSession } from "./scripts/session-repository"
 import { saveAgentPrompts } from "./scripts/prompt-repository"
 import { TabSession } from "./scripts/session"
-
-let lastRuleId = 0
-let tabPort: Map<number, browser.Runtime.Port> = new Map()
-let sessions: Map<number, TabSession> = new Map()
-let activeTabs: Set<number> = new Set()
+import { BrowserMessage, ActivateAgent, CloseSidebar, DisplaySidebar, ToggleSidebar, UserMessage, ServiceMessage } from "./scripts/browser-message"
 
 const createToggleContextMenu = () => {
   browser.contextMenus.create({
@@ -18,12 +15,12 @@ const createToggleContextMenu = () => {
 }
 
 const activateAgent = async (agent: Agent, tabId: number, url: string) => {
-  if (sessions.has(tabId)) {
+  if (await findSessionByTabId(tabId)) {
     return
   }
   let resp = await agent.createSession(await browser.i18n.getAcceptLanguages())
-  let session = new TabSession(resp.id, agent, tabId, url, tabPort.get(tabId)!)
-  sessions.set(tabId, session)
+  let session = new TabSession(resp.id, tabId, agent, url)
+  await saveSession(session)
   await updateRequestRules(session)
   await session.activate(url)
 }
@@ -32,10 +29,11 @@ const updateRequestRules = async (session: TabSession) => {
   if (!session.agent.manifest.onHttpRequest) {
     return
   }
+  let lastRuleId = await getLastRuleId()
   let requestRules = session.agent.manifest.onHttpRequest
     .flatMap(r => r.actions
       .filter(a => a.addHeader)
-      .map(a => buildModifyHeadersRule(r.condition, a.addHeader!, session))
+      .map(a => buildModifyHeadersRule(lastRuleId++, r.condition, a.addHeader!, session))
     )
   if (!requestRules) {
     return
@@ -47,8 +45,13 @@ const updateRequestRules = async (session: TabSession) => {
   })
 }
 
-const buildModifyHeadersRule = (condition: AgentRuleCondition, action: AddHeaderRuleAction, session: TabSession): browser.DeclarativeNetRequest.Rule => ({
-  id: lastRuleId++,
+const getLastRuleId = async (): Promise<number> => {
+  let rules = await browser.declarativeNetRequest.getSessionRules()
+  return Math.max(...rules.map(r => r.id))
+}
+
+const buildModifyHeadersRule = (ruleId: number, condition: AgentRuleCondition, action: AddHeaderRuleAction, session: TabSession): browser.DeclarativeNetRequest.Rule => ({
+  id: ruleId,
   priority: 1,
   action: {
     type: "modifyHeaders",
@@ -71,26 +74,8 @@ const getTabPreviousRuleIds = async (tabId: number): Promise<number[]> => {
   return prevRules.filter(r => r.condition.tabIds?.includes(tabId)).map(r => r.id)
 }
 
-const onPopupMessage = async (msg: any, tabId: number, port: browser.Runtime.Port) => {
-  if (msg.type === "activateAgent") {
-    let agent = await findAgentById(msg.agentId)
-    activateAgent(agent!, tabId, port.sender!.url!)
-  } else if (msg.type === "activated") {
-    if (!activeTabs.has(tabId)) {
-      toggleSidebar(tabId)
-    }
-  } else if (msg.type === "closeSidebar") {
-    toggleSidebar(tabId)
-  }
-}
-
 const toggleSidebar = (tabId: number) => {
-  if (activeTabs.has(tabId)) {
-    activeTabs.delete(tabId)
-  } else {
-    activeTabs.add(tabId)
-  }
-  browser.tabs.sendMessage(tabId, { type: "sidebar-toggle" })
+  browser.tabs.sendMessage(tabId, new ToggleSidebar())
 }
 
 browser.runtime.onInstalled.addListener(async () => {
@@ -102,32 +87,37 @@ browser.runtime.onInstalled.addListener(async () => {
   }
 })
 
-browser.runtime.onConnect.addListener(async (port) => {
-  let tabId = port.sender?.tab?.id!
-  tabPort.set(tabId, port)
-  port.onMessage.addListener(async (msg: any, _) => {
-    onPopupMessage(msg, tabId, port)
-  })
-  port.onDisconnect.addListener(() => {
-    tabPort.delete(tabId)
-    activeTabs.delete(tabId)
-  })
-})
-
 browser.action.onClicked.addListener((tab, _) => toggleSidebar(tab.id!))
 
 browser.contextMenus.onClicked.addListener((_, tab) => {
-  toggleSidebar(tab!.id!);
+  let tabId = tab!.id!
+  toggleSidebar(tabId)
+})
+
+browser.runtime.onMessage.addListener(async (m: any, sender) => {
+  let tabId = sender.tab?.id!
+  let msg = BrowserMessage.fromJsonObject(m)
+  if (msg instanceof ActivateAgent) {
+    let agent = await findAgentById(msg.agentId)
+    await activateAgent(agent!, tabId, sender.url!)
+  } else if (msg instanceof DisplaySidebar) {
+    toggleSidebar(tabId)
+  } else if (msg instanceof CloseSidebar) {
+    toggleSidebar(tabId)
+  } else if (msg instanceof UserMessage) {
+    let session = (await findSessionByTabId(tabId))!
+    await session.processUserMessage(msg.text)
+  }
 })
 
 browser.webRequest.onCompleted.addListener(async (req) => {
+  let tabId = req.tabId
   if (req.initiator?.startsWith("chrome-extension://")) {
     return
   }
-  let tabId = req.tabId
-  let session = sessions.get(tabId)
+  let session = await findSessionByTabId(tabId)
   if (session) {
-    session.processInteraction(req)
+    await session.processInteraction(req)
   } else {
     let agents = await findAllAgents()
     for (const a of agents) {
@@ -140,11 +130,10 @@ browser.webRequest.onCompleted.addListener(async (req) => {
 
 browser.tabs.onRemoved.addListener(async (tabId) => {
   let prevRuleIds = await getTabPreviousRuleIds(tabId)
-  await browser.declarativeNetRequest.updateSessionRules({ removeRuleIds: prevRuleIds });
-  tabPort.delete(tabId)
-  let session = sessions.get(tabId)
+  browser.declarativeNetRequest.updateSessionRules({ removeRuleIds: prevRuleIds })
+  let session = await findSessionByTabId(tabId)
   if (session) {
     session.close()
+    await removeSession(session)
   }
-  sessions.delete(tabId)
 })

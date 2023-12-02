@@ -1,4 +1,5 @@
 import browser from "webextension-polyfill";
+import { BrowserMessage, ToggleSidebar, ResizeSidebar } from "./scripts/browser-message";
 
 let sidebarWidth = 400
 const minWidth = 200
@@ -34,10 +35,11 @@ iframe.allow = "clipboard-write"
 iframe.src = browser.runtime.getURL("src/popup.html")
 document.body.appendChild(iframe)
 
-browser.runtime.onMessage.addListener((msg, _) => {
-    if (msg.type == "sidebar-toggle") {
+browser.runtime.onMessage.addListener((m: any) => {
+    let msg = BrowserMessage.fromJsonObject(m)
+    if (msg instanceof ToggleSidebar) {
         toggle()
-    } else if (msg.type == "sidebar-resize") {
+    } else if (msg instanceof ResizeSidebar) {
         resize(msg.delta)
     }
 })

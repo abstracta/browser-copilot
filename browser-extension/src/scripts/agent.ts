@@ -52,7 +52,6 @@ export class Agent {
         return interaction.summary
     }
 
-
     public async ask(msg: string, sessionId: string): Promise<string> {
         let question = await postJson(this.url + "/sessions/" + sessionId + "/questions", { question: msg })
         return question.answer
