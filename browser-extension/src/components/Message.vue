@@ -12,12 +12,13 @@ const props = defineProps<{ text: string, isUser: boolean, agentLogo: string, ag
 const { t } = useI18n()
 const md = new MarkdownIt({
   highlight: (code: string, lang: string) => {
+    let ret = code
     if (lang && hljs.getLanguage(lang)) {
       try {
-        return hljs.highlight(code, { language: lang }).value
+        ret = hljs.highlight(code, { language: lang }).value
       } catch (__) { }
     }
-    return ''
+    return '<pre><code class="hljs">' + ret + '</code></pre>'
   }
 })
 const renderedMsg = computed(() => props.isUser ? props.text.replaceAll("\n", "<br/>") : md.render(props.text))
@@ -62,6 +63,10 @@ pre {
   background: var(--code-background-color);
   border-radius: 8px;
   text-wrap: wrap;
+}
+
+pre code.hljs {
+  padding: 0px;
 }
 
 .message {
