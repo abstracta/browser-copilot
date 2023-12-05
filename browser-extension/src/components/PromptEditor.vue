@@ -61,6 +61,7 @@ const checkText = async (val: string): Promise<ValidationResult> => {
 .modal-form textarea,
 .modal-form input {
   border-radius: 7px;
+  overflow: hidden;
 }
 </style>
 

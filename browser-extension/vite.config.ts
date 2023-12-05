@@ -25,7 +25,7 @@ export default defineConfig({
     vue(),
     webExtension({
       manifest: generateManifest,
-      additionalInputs: ["src/popup.html"],
+      additionalInputs: ["src/index.html"],
       watchFilePaths: ["package.json", "manifest.json"],
       webExtConfig: {
         startUrl: "https://github.com/abstracta/browser-copilot"

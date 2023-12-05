@@ -26,7 +26,7 @@ const renderedMsg = computed(() => props.isUser ? props.text.replaceAll("\n", "<
 </script>
 
 <template>
-  <div class="message">
+  <div class="flex flex-col relative text-[14px] mb-[5px] rounded-[20px] p-[5px] min-w-[25px]">
     <div class="flex items-center flex-row">
       <img :src="isUser ? YouDot : agentLogo" class="w-[20px] mr-1 rounded-full" />
       <span class="text-[15px]">{{ isUser ? t('you') : agentName }}</span>
@@ -35,9 +35,9 @@ const renderedMsg = computed(() => props.isUser ? props.text.replaceAll("\n", "<
         <NewPromptButton v-if="isUser" :is-large-icon="false" :text="text" :agent-id="agentId" />
       </div>
     </div>
-    <div class="mt-[10px] ml-[35px]">
-      <div v-html="renderedMsg" class="message-text" />
-      <div class="dot-pulse" style="margin-left: 10px;" v-if="!text" />
+    <div class="mt-[10px] ml-[30px]">
+      <div v-html="renderedMsg" class="flex flex-col font-light text-[15px] leading-tight gap-[15px]" id="rendered-msg" />
+      <div class="ml-[10px] dot-pulse" v-if="!text" />
     </div>
   </div>
 </template>
@@ -46,18 +46,6 @@ const renderedMsg = computed(() => props.isUser ? props.text.replaceAll("\n", "<
   $dot-height: 5px,
   $dot-color: var(--accent-color));
 
-ul {
-  margin: 0px;
-  padding-left: 20px;
-}
-
-h2,
-h3,
-h4 {
-  margin: 0px;
-  color: var(--accent-color);
-}
-
 pre {
   padding: 15px;
   background: var(--code-background-color);
@@ -65,29 +53,15 @@ pre {
   text-wrap: wrap;
 }
 
+// Fix: Inadequate gap between code blocks within list items.
+#rendered-msg li pre {
+   margin-bottom: 10px;   
+}
+
 pre code.hljs {
   padding: 0px;
 }
 
-.message {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: var(--half-spacing);
-  position: relative;
-  font-size: 14px;
-  border-radius: 20px;
-  padding: var(--half-spacing);
-  min-width: 25px;
-}
-
-.message-text {
-  font-weight: 300;
-  font-size: 15px;
-  line-height: 1.2em;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
 </style>
 
 <i18n>

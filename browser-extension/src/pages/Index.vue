@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref, onBeforeMount, nextTick } from 'vue'
 import browser from "webextension-polyfill"
-import { BrowserMessage, ToggleSidebar, ContentMessage, DisplaySidebar, ActivatedAgent, AiMessage, ServiceMessage, UserMessage, ActivateAgent, CloseSidebar } from "../scripts/browser-message"
+import { BrowserMessage, ToggleSidebar, DisplaySidebar, ActivatedAgent, AiMessage, UserMessage, ActivateAgent, CloseSidebar } from "../scripts/browser-message"
 import CopilotChat, { ChatMessage } from "../components/CopilotChat.vue"
 import CopilotList from "../components/CopilotList.vue"
 
@@ -39,7 +39,7 @@ onBeforeMount(() => {
   })
 })
 
-const sendToServiceWorker = async (msg: ServiceMessage) => {
+const sendToServiceWorker = async (msg: BrowserMessage) => {
   await browser.runtime.sendMessage(msg)
 }
 
@@ -80,136 +80,28 @@ const closeSidebar = () => {
 </script>
 
 <template>
-  <div class="sidebar" ref="sidebar">
-    <div class="resizer" @mousedown="startResize" />
+  <div class="fixed flex flex-col left-[-10px] w-full h-[var(--sidebar-height)] justify-left m-[var(--spacing)] border-[.1px] border-slate-500 bg-[var(--background-color)] rounded-tl-[var(--top-round-corner)] rounded-bl-[var(--bottom-round-corner)]" id="sidebar">
+    <div class="absolute left-0 z-[1000] cursor-ew-resize w-[var(--spacing)] h-full" @mousedown="startResize" />
     <CopilotChat v-if="agentId" :messages="messages" :agent-id="agentId" :agent-name="agentName" :agent-logo="agentLogo"
       @userMessage="onUserMessage" @close="closeSidebar" />
     <CopilotList v-if="!agentId" @activateAgent="onActivateAgent" @close="closeSidebar" />
   </div>
 </template>
 
-<style>
-@font-face {
-  font-family: "Sora";
-  src: url("../assets/fonts/Sora-Regular.ttf") format("truetype");
-}
+<style scoped>
 
-@font-face {
-  font-family: "Sora";
-  src: url("../assets/fonts/Sora-Thin.ttf") format("truetype");
-  font-weight: 100;
-}
-
-@font-face {
-  font-family: "Sora";
-  src: url("../assets/fonts/Sora-Light.ttf") format("truetype");
-  font-weight: 300;
-}
-
-html,
-body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  font-family: 'Sora';
-  --white-color: #FFF;
-  --background-color: var(--white-color);
-  --shadow: 0 var(--half-spacing) var(--spacing) rgba(0, 0, 0, 0.33);
-  --border: 1px solid #ccc;
-  --color: #3D363E;
-  --code-background-color: #202126;
-  --action-icon-color: #ACACAC;
-  --light-accent-color: #6f37fd;
-  --accent-color: rgb(117, 75, 222);
-  --warning-color: orange;
-  --error-color: red;
-  --title-color: #3D363E;
-  --focus-color: var(--title-color);
-  --spacing: 10px;
-  --half-spacing: 5px;
-  --content-space: 20px;
-  --top-round-corner: 24px;
-  --bottom-round-corner: 24px;
-  color: var(--color);
-}
-
-.header {
-  display: flex;
-  flex-direction: row;
-}
-
-.actions {
-  text-align: right;
-  flex: auto;
-}
-
-.resizer {
-  position: absolute;
-  left: 0;
-  z-index: 1000;
-  cursor: ew-resize;
-  height: 100%;
-  width: var(--spacing);
-}
-
-.sidebar {
-  position: fixed;
-  left: -10px;
-  width: 100%;
-  height: calc(100% - var(--content-space));
-  display: flex;
-  flex-direction: column;
-  justify-content: left;
-  margin: var(--spacing);
-  border: var(--border);
-  background-color: var(--background-color);
-  border-top-left-radius: var(--top-round-corner);
-  border-bottom-left-radius: var(--bottom-round-corner);
-  padding: var(--spacing);
-}
-
-.sidebar ::-webkit-scrollbar {
+#sidebar ::-webkit-scrollbar {
   width: 7px;
   background-color: #ccc;
   border-radius: 3px;
 }
 
-.sidebar ::-webkit-scrollbar-thumb {
+#sidebar ::-webkit-scrollbar-thumb {
   background-color: var(--accent-color);
   border-radius: 3px;
 }
 
-.sidebar ::-webkit-scrollbar-thumb:hover {
+#sidebar ::-webkit-scrollbar-thumb:hover {
   background-color: var(--accent-color);
-}
-
-button {
-  padding: var(--half-spacing);
-  background-color: inherit;
-  border: none;
-  cursor: pointer;
-  width: fit-content;
-}
-
-button:hover {
-  color: var(--focus-color);
-}
-
-div.list-row {
-  display: flex;
-  flex-direction: row;
-}
-
-.list-row+.list-row {
-  border-top: var(--border);
-}
-
-div.list-item {
-  flex: auto;
-  align-self: center;
-}
-
-img {
-  margin: var(--half-spacing);
 }
 </style>

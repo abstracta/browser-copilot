@@ -1,3 +1,104 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+  font-family: "Sora";
+  src: url("../fonts/Sora-Regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Sora";
+  src: url("../fonts/Sora-Thin.ttf") format("truetype");
+  font-weight: 100;
+}
+
+@font-face {
+  font-family: "Sora";
+  src: url("../fonts/Sora-Light.ttf") format("truetype");
+  font-weight: 300;
+}
+
+html,
+body {
+  font-family: "Sora";
+  --white-color: #fff;
+  --background-color: var(--white-color);
+  --shadow: 0 var(--half-spacing) var(--spacing) rgba(0, 0, 0, 0.33);
+  --border: 1px solid #ccc;
+  --dark-color: #3d363e;
+  --gray-color: #acacac;
+  --code-background-color: #202126;
+  --modal-overlay-background-color: rgba(0, 0, 0, 0.2);
+  --action-icon-color: var(--gray-color);
+  --light-accent-color: #6f37fd;
+  --accent-color: rgb(117, 75, 222);
+  --warning-color: orange;
+  --error-color: red;
+  --title-color: #3d363e;
+  --focus-color: var(--title-color);
+  --spacing: 10px;
+  --half-spacing: 5px;
+  --content-space: 20px;
+  --top-round-corner: 24px;
+  --bottom-round-corner: 24px;
+  --sidebar-height: calc(100% - var(--content-space));
+}
+
+ul {
+  margin: 0px;
+  padding-left: 20px;
+}
+
+h2,
+h3,
+h4 {
+  margin: 0px;
+  color: var(--accent-color);
+}
+
+button {
+  padding: var(--half-spacing);
+  background-color: inherit;
+  border: none;
+  cursor: pointer;
+  width: fit-content;
+}
+
+.flex-row + .flex-row {
+  border-top: var(--border);
+}
+
+img {
+  margin: var(--half-spacing);
+}
+
+/* icon-tabler override */
+
+.action-icon .icon-tabler {
+  width: 25px;
+  height: 25px;
+}
+
+.icon-tabler {
+  margin-left: 3px;
+  margin-right: 3px;
+}
+
+.icon-tabler-x:hover,
+.icon-tabler-settings:hover {
+  color: var(--accent-color);
+}
+
+.action-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--action-icon-color);
+}
+
+.action-icon:hover {
+  color: var(--accent-color);
+  cursor: pointer;
+}
+
+/* icon-tabler override */

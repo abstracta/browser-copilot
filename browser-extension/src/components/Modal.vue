@@ -1,21 +1,17 @@
 <script lang="ts" setup>
 defineProps<{ show: boolean, title: string, icon?: string}>()
-const emit = defineEmits(['close'])
 
-const onClose = () => {
-  emit('close')
-}
 </script>
 
 <template>
   <Transition name="modal">
-    <div v-if="show" class="modal-mask">
-      <div class="modal-container">
-        <div class="modal-header">
+    <div v-if="show" class="flex absolute z-[9998] top-0 left-0 w-full h-full bg-[var(--modal-overlay-background-color)] transition-opacity duration-300 ease-in-out rounded-tl-[var(--top-round-corner)] rounded-bl-[var(--bottom-round-corner)]">
+      <div class="w-[320px] h-auto m-auto p-[15px] bg-[var(--background-color)] rounded-[var(--spacing)] shadow-[var(--shadow)] transition-all duration-300 ease-in-out">
+        <div class="modal-header flex flex-row">
           <img :src="icon" v-if="icon" />
-          <h2>{{ title }}</h2>
-          <div class="modal-actions">
-            <button @click="onClose" style="border: none"><x-icon /></button>
+          <h2 class="font-semibold text-base text-current self-center">{{ title }}</h2>
+          <div class="modal-actions flex flex-auto flex-row-reverse">
+            <button @click="$emit('close')"><x-icon /></button>
           </div>
         </div>
         <slot />
@@ -25,30 +21,6 @@ const onClose = () => {
 </template>
 
 <style>
-.modal-mask {
-  position: absolute;
-  z-index: 9998;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  transition: opacity 0.3s ease;
-  border-top-left-radius: var(--top-round-corner);
-  border-bottom-left-radius: var(--bottom-round-corner);
-}
-
-.modal-container {
-  width: 320px;
-  margin: auto;
-  padding: 15px;
-  background-color: var(--background-color);
-  border-radius: var(--spacing);
-  box-shadow: var(--shadow);
-  transition: all 0.3s ease;
-}
-
 .modal-enter-from {
   opacity: 0;
 }
@@ -65,31 +37,5 @@ const onClose = () => {
 
 .modal-container label {
   display: block;
-}
-
-.modal-header {
-  display: flex;
-  flex-direction: row;
-}
-
-.modal-header h2 {
-  font-weight: 600;
-  font-size: 16px;
-  color: inherit;
-}
-
-.modal-header h2 {
-  align-self: center;
-}
-
-.modal-actions {
-  display: flex;
-  flex: auto;
-  flex-direction: row-reverse;
-}
-
-.modal-actions .icon-tabler-x {
-  width: 22px;
-  height: 22px;
 }
 </style>

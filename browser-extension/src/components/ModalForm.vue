@@ -23,21 +23,14 @@ const onSave = () => {
 
 <template>
   <Modal :show="show" :title="title" @close="onClose">
-    <div class="modal-form">
+    <div class="flex flex-col gap-[var(--spacing)] my-[var(--spacing)] modal-form">
       <slot />
     </div>
-    <button class="btn-modal-action" @click="onSave">{{ buttonText }}</button>
+    <button class="bg-[var(--accent-color)] text-white rounded-[4px] w-full h-[32px] hover:text-white hover:bg-[var(--light-accent-color)]" @click="onSave">{{ buttonText }}</button>
   </Modal>
 </template>
 
 <style>
-.modal-form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing);
-  margin: var(--spacing) 0px;
-}
-
 .modal-form div {
   display: flex;
   flex-direction: column;
@@ -66,18 +59,5 @@ const onSave = () => {
 .modal-form .error {
   color: var(--error-color);
   outline-color: var(--error-color);
-}
-
-.btn-modal-action {
-  background: var(--accent-color);
-  color: var(--white-color);
-  border-radius: 4px;
-  width: 100%;
-  height: 32px;
-}
-
-.btn-modal-action:hover {
-  color: var(--white-color);
-  background: var(--light-accent-color);
 }
 </style>

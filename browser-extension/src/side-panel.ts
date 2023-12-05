@@ -32,7 +32,7 @@ const resize = (delta: number) => {
 let iframe = document.createElement('iframe')
 setSidebarIframeStyle(iframe)
 iframe.allow = "clipboard-write"
-iframe.src = browser.runtime.getURL("src/popup.html")
+iframe.src = browser.runtime.getURL("src/index.html")
 document.body.appendChild(iframe)
 
 browser.runtime.onMessage.addListener((m: any) => {

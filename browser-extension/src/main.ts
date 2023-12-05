@@ -1,5 +1,5 @@
 import { createApp } from "vue";
-import Popup from "./pages/Popup.vue";
+import Index from "./pages/Index.vue";
 import VueTablerIcons from "vue-tabler-icons";
 import './assets/style/index.css'
 import { createI18n } from 'vue-i18n'
@@ -12,7 +12,7 @@ const i18n = createI18n({
   missingWarn: false,
   fallbackWarn: false
 })
-const app = createApp(Popup)
+const app = createApp(Index)
 app.use(VueTablerIcons)
 app.use(i18n)
 app.mount("body")

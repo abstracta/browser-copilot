@@ -22,28 +22,14 @@ const close = () => {
 <template>
   <div>
     <div v-if="isLargeIcon">
-      <button @click="showModal = true" class="flex items-center p-2 my-2 add-prompt-btn-large">Prompts
-        <circle-plus-icon /></button>
+      <button @click="showModal = true" class="flex items-center p-2 my-2 text-white bg-[var(--dark-color)] w-full h-[32px] rounded-[4px]">Prompts
+        <circle-plus-icon class="ml-[5px]"/></button>
     </div>
     <div v-else>
-      <circle-plus-icon class="action-icon add-prompt-btn-sm" @click="showModal = true" />
+      <circle-plus-icon class="action-icon" @click="showModal = true" />
     </div>
-    <Teleport to="body">
+    <Teleport to="#sidebar">
       <PromptEditor :text="text" :show="showModal" @close="close" @saved="onSaved" :agent-id="agentId" />
     </Teleport>
   </div>
 </template>
-<style scoped>
-.add-prompt-btn-sm.icon-tabler-circle-plus {
-  position: relative;
-  bottom: 2px;
-}
-
-.add-prompt-btn-large {
-  color: var(--white-color);
-  background: var(--color);
-  width: 100%;
-  height: 32px;
-  border-radius: 4px;
-}
-</style>

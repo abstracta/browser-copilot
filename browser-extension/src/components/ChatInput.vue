@@ -80,64 +80,19 @@ const loadPromptList = async () => {
 </script>
 
 <template>
-  <div class="chat-input">
-    <div class="prompt-list-popup" v-if="showingPromptList()">
-      <div class="prompt-list">
-        <div v-for="(prompt, index) in promptList" :key="prompt.name" @keydown="onKeydown"
-          :class="['prompt-item', 'list-row', index === selectedPromptIndex && 'selected-prompt']"
-          @click="e => usePrompt(index, e)" @mousedown="e => e.preventDefault()">{{ prompt.name }}</div>
-      </div>
-    </div>
-    <TextArea class="message-input" :placeholder="t('placeholder')" v-model="inputText" @keydown="onKeydown" focused
+  <div class="flex flex-row rounded-[6px] p-[5px] border-[1px] border-[#754BDE] shadow-sm">
+    <TextArea class="w-full ml-[5px] mr-[10px] resize-none overflow-hidden max-h-[60px] border-0 outline-0 self-center" :placeholder="t('placeholder')" v-model="inputText" @keydown="onKeydown" focused
       :cursor-position="inputPosition" />
-    <button class="send-button" @click="sendMessage"><brand-telegram-icon /></button>
+    <button class="hover:text-[var(--accent-color)]" @click="sendMessage"><brand-telegram-icon /></button>
+  
+    <div class="absolute bottom-[100px] z-[100px] rounded-[5.5px] border-[1px] border-[var(--accent-color)] bg-[var(--background-color)] shadow-sm" v-if="showingPromptList()">
+        <div v-for="(prompt, index) in promptList" :key="prompt.name" @keydown="onKeydown"
+          :class="['flex flex-row p-[5px] cursor-pointer', index === selectedPromptIndex && 'bg-[var(--accent-color)] text-white']"
+          @click="e => usePrompt(index, e)" @mousedown="e => e.preventDefault()">{{ prompt.name }}
+        </div>
+    </div>
   </div>
 </template>
-
-<style>
-.chat-input {
-  display: flex;
-  flex-direction: row;
-  border-radius: 6px;
-  padding: var(--half-spacing);
-  border: 1.5px solid #754BDE;
-  box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.15);
-}
-
-.message-input {
-  width: 100%;
-  margin-right: var(--spacing);
-  resize: none;
-  overflow: hidden;
-  max-height: 400px;
-  border: none;
-  outline: none;
-  align-self: center;
-  margin-left: 5px;
-}
-
-.prompt-list-popup {
-  position: absolute;
-  bottom: 90px;
-  z-index: 100;
-}
-
-.prompt-list-popup .prompt-list {
-  border-radius: 5.5px;
-  border: 1px solid var(--accent-color);
-  background: var(--background-color);
-  box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.12);
-}
-
-.selected-prompt {
-  background-color: var(--light-accent-color);
-}
-
-.send-button:hover {
-  color: var(--accent-color);
-}
-</style>
-
 <i18n>
 {
   "en": {

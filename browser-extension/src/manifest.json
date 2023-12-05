@@ -41,7 +41,7 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "src/popup.html"
+        "src/index.html"
       ],
       "matches": [
         "http://*/*",

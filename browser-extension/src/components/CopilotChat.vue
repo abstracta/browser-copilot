@@ -20,7 +20,8 @@ import CopilotName from "../components/CopilotName.vue"
 import Message from "../components/Message.vue"
 import ChatInput from "../components/ChatInput.vue"
 import CopilotConfig from "../components/CopilotConfig.vue"
-import Footer from "../components/Footer.vue"
+import PageOverlay from "./PageOverlay.vue"
+import BtnClose from './BtnClose.vue'
 
 const props = defineProps<{ agentId: string, agentName: string, agentLogo: string, messages: ChatMessage[] }>()
 const emit = defineEmits<{
@@ -46,94 +47,31 @@ const onUserMessage = async (text: string) => {
 }
 
 const lastMessage = computed((): ChatMessage => props.messages[props.messages.length - 1])
-
 </script>
 
 <template>
-  <div class="copilot-chat">
-    <div class="header items-center py-3 px-1.5">
-      <img :src="agentLogo" class="agent-icon" />
-      <div class="text-[20px] font-semibold">
-        <CopilotName :agentName="agentName" />
-      </div>
-      <div class="actions">
+  <PageOverlay>
+      <template v-slot:headerContent>
+        <img :src="agentLogo" class="w-[25px] h-[25px]" />
+        <div class="text-[20px] font-semibold">
+          <CopilotName :agentName="agentName" />
+        </div>
+      </template>
+      <template v-slot:headerActions>
         <button @click="showConfig = true"><settings-icon /></button>
-        <button @click="$emit('close')"><x-icon /></button>
+        <BtnClose @click="$emit('close')"/>
+      </template>
+    <template v-slot:content>
+      <div class="h-full flex flex-col">
+        <div class="h-full flex flex-col overflow-y-auto mb-4 rounded-[var(--spacing)]" ref="messagesDiv">
+          <Message v-for="message in messages" :key="message.id" :text="message.text" :is-user="message.isUser" 
+            :agent-logo="agentLogo" :agent-name="agentName" :agent-id="agentId" />
+        </div>
+        <ChatInput @send-message="onUserMessage" :can-send-message="lastMessage.text !== ''" :agent-id="agentId" />
       </div>
-    </div>
-    <div class="border-t border-gray-300 absolute left-0 right-0"></div>
-    <div class="chat-container py-3">
-      <div class="chat-messages" ref="messagesDiv">
-        <Message :text="message.text" :is-user="message.isUser" v-for="message in messages" :key="message.id"
-          :agent-logo="agentLogo" :agent-name="agentName" :agent-id="agentId" />
-      </div>
-      <ChatInput @send-message="onUserMessage" :can-send-message="lastMessage.text !== ''" :agent-id="agentId" />
-      <Footer />
-    </div>
-    <CopilotConfig :show="showConfig" @close="showConfig = false" :agent-id="agentId" :agent-name="agentName"
-      :agent-logo="agentLogo" />
-  </div>
+    </template>
+    <template v-slot:modalsContainer>
+      <CopilotConfig :show="showConfig" @close="showConfig = false" :agent-id="agentId" :agent-name="agentName" :agent-logo="agentLogo" />
+    </template>
+  </PageOverlay>
 </template>
-
-<style>
-.agent-icon {
-  width: 25px;
-  height: 25px;
-}
-
-/* icon-tabler override */
-.icon-tabler {
-  width: 25px;
-  height: 25px;
-  margin-left: 5px;
-  margin-right: 5px;
-}
-
-.icon-tabler-x:hover,
-.icon-tabler-settings:hover {
-  color: var(--accent-color);
-}
-
-.header .actions .icon-tabler-x {
-  width: 28px;
-  height: 28px;
-  position: relative;
-  top: 2px;
-}
-
-.action-icon {
-  width: 20px;
-  height: 20px;
-  color: var(--action-icon-color);
-}
-
-.action-icon:hover {
-  color: var(--accent-color);
-  cursor: pointer;
-}
-
-/* icon-tabler override */
-</style>
-<style scoped>
-.copilot-chat {
-  height: 100%;
-}
-
-.chat-container {
-  height: calc(100% - var(--content-space) - 20px);
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: left;
-}
-
-.chat-messages {
-  height: 100%;
-  overflow-y: auto;
-  margin-bottom: var(--spacing);
-  border-radius: var(--spacing);
-  padding: var(--half-spacing);
-  display: flex;
-  flex-direction: column;
-}
-</style>

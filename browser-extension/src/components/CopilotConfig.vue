@@ -64,14 +64,10 @@ const confirmPromptRemoval = async () => {
 <template>
   <Modal :title="t('title', { agentName: agentName })" :show="show" @close="close">
     <NewPromptButton text="" :isLargeIcon="true" :agent-id="agentId" @save="onNewPrompt" />
-    <div class="prompt-list">
-      <div v-for="(prompt, index) in prompts" :key="prompt.name" class="list-row">
-        <div class="prompt-item list-item" @click="editingPrompt = prompt">{{ prompt.name }}</div>
-        <div class="prompt-item-actions">
-          <button @click="removePrompt(index)"><trash-x-icon class="action-icon" /></button>
-        </div>
+      <div v-for="(prompt, index) in prompts" :key="prompt.name" class="flex flex-row">
+        <div class="flex-auto self-center cursor-pointer p-[5px]" @click="editingPrompt = prompt">{{ prompt.name }}</div>
+        <button @click="removePrompt(index)"><trash-x-icon class="action-icon" /></button>
       </div>
-    </div>
   </Modal>
   <PromptEditor :name="editingPrompt?.name || ''" :text="editingPrompt?.text || ''" @close="closePromptEditor"
     @saved="onPromptUpdate" :show="editingPrompt !== undefined" :agent-id="agentId" />
@@ -80,28 +76,6 @@ const confirmPromptRemoval = async () => {
     {{ t('deleteConfirmation', { promptName: prompts ? prompts[deletingPromptIndex].name : '' }) }}
   </ModalForm>
 </template>
-
-<style>
-div.prompt-item-actions {
-  display: flex;
-  flex-direction: row;
-}
-
-.prompt-list {
-  border-radius: var(--half-spacing);
-  list-style: none;
-}
-
-div.prompt-item {
-  cursor: pointer;
-  padding: 5px;
-}
-
-.selected-prompt {
-  background-color: var(--accent-color);
-  color: white;
-}
-</style>
 
 <i18n>
 {
