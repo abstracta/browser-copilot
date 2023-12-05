@@ -28,7 +28,8 @@ export default defineConfig({
       additionalInputs: ["src/index.html"],
       watchFilePaths: ["package.json", "manifest.json"],
       webExtConfig: {
-        startUrl: "https://github.com/abstracta/browser-copilot"
+        startUrl: process.env.START_URL || "https://github.com/abstracta/browser-copilot",
+        args: process.env.BROWSER_ARGS?.split(' ') || []
       }
     }),
     VueI18nPlugin({
