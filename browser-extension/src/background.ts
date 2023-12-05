@@ -4,7 +4,7 @@ import { findAgentById, findAllAgents, addAgent } from "./scripts/agent-reposito
 import { findSessionByTabId, saveSession, removeSession } from "./scripts/session-repository"
 import { saveAgentPrompts } from "./scripts/prompt-repository"
 import { TabSession } from "./scripts/session"
-import { BrowserMessage, ActivateAgent, CloseSidebar, DisplaySidebar, ToggleSidebar, UserMessage, ServiceMessage } from "./scripts/browser-message"
+import { BrowserMessage, ActivateAgent, CloseSidebar, DisplaySidebar, ToggleSidebar, UserMessage } from "./scripts/browser-message"
 
 const createToggleContextMenu = () => {
   browser.contextMenus.create({

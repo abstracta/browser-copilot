@@ -1,12 +1,15 @@
 import os
+import traceback
+from typing import AsyncIterator
 
 import dotenv
 from fastapi import FastAPI, HTTPException, status
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
+from sse_starlette.sse import ServerSentEvent
 
 from gpt_agent.agent import Agent
-from gpt_agent.domain import Session, Question, SessionBase, QuestionBase
+from gpt_agent.domain import Session, Question, SessionBase
 from gpt_agent.file_system_repos import SessionsRepository, QuestionsRepository
 
 dotenv.load_dotenv()
@@ -38,10 +41,6 @@ class QuestionRequest(BaseModel):
     question: str
 
 
-class QuestionResponse(QuestionBase):
-    pass
-
-
 async def _find_session(session_id: str) -> Session:
     ret = await sessions_repo.find_session(session_id)
     if not ret:
@@ -51,9 +50,20 @@ async def _find_session(session_id: str) -> Session:
 
 
 @app.post('/sessions/{session_id}/questions')
-async def answer_question(session_id: str, req: QuestionRequest) -> QuestionResponse:
+async def answer_question(session_id: str, req: QuestionRequest) -> StreamingResponse:
     session = await _find_session(session_id)
-    answer = await Agent(session).ask(req.question)
-    ret = Question(question=req.question, answer=answer, session=session)
-    await questions_repo.save_question(ret)
-    return QuestionResponse(**ret.model_dump())
+    return StreamingResponse(agent_response_stream(req, session), media_type="text/event-stream")
+
+
+async def agent_response_stream(req: QuestionRequest, session: Session) -> AsyncIterator[str]:
+    try:
+        answer_stream = Agent(session).ask(req.question)
+        complete_answer = ""
+        async for token in answer_stream:
+            complete_answer = complete_answer + token
+            yield ServerSentEvent(data=token).encode()
+        ret = Question(question=req.question, answer=complete_answer, session=session)
+        await questions_repo.save_question(ret)
+    except Exception as e:
+        traceback.print_exception(e)
+        yield ServerSentEvent(event="error", data=e).encode()

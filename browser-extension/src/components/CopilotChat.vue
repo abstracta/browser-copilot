@@ -5,11 +5,21 @@ export class ChatMessage {
   id: number
   text: string
   isUser: boolean
+  isComplete: boolean
 
-  constructor(text: string, isUser: boolean) {
+  constructor(text: string, isUser: boolean, isComplete: boolean) {
     this.id = currentMsgId++
     this.text = text
     this.isUser = isUser
+    this.isComplete = isComplete
+  }
+
+  public static userMessage(text: string): ChatMessage {
+    return new ChatMessage(text, true, true)
+  }
+
+  public static aiMessage(text?: string): ChatMessage {
+    return new ChatMessage(text || '', false, text !== undefined)
   }
 }
 </script>
@@ -65,9 +75,9 @@ const lastMessage = computed((): ChatMessage => props.messages[props.messages.le
       <div class="h-full flex flex-col">
         <div class="h-full flex flex-col overflow-y-auto mb-4 rounded-[var(--spacing)]" ref="messagesDiv">
           <Message v-for="message in messages" :key="message.id" :text="message.text" :is-user="message.isUser" 
-            :agent-logo="agentLogo" :agent-name="agentName" :agent-id="agentId" />
+            :is-complete="message.isComplete" :agent-logo="agentLogo" :agent-name="agentName" :agent-id="agentId" />
         </div>
-        <ChatInput @send-message="onUserMessage" :can-send-message="lastMessage.text !== ''" :agent-id="agentId" />
+        <ChatInput @send-message="onUserMessage" :can-send-message="lastMessage.isComplete" :agent-id="agentId" />
       </div>
     </template>
     <template v-slot:modalsContainer>

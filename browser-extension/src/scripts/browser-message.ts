@@ -20,7 +20,7 @@ export abstract class BrowserMessage {
       case "userMessage":
         return new UserMessage(obj.text)
       case "aiMessage":
-        return new AiMessage(obj.text)
+        return new AiMessage(obj.text, obj.isComplete)
       case "activatedAgent":
         return new ActivatedAgent(obj.agentId, obj.agentName, obj.agentLogo)
       default:
@@ -29,15 +29,13 @@ export abstract class BrowserMessage {
   }
 }
 
-export abstract class SidebarMessage extends BrowserMessage { }
-
-export class ToggleSidebar extends SidebarMessage {
+export class ToggleSidebar extends BrowserMessage {
   constructor() {
     super("toggleSidebar")
   }
 }
 
-export class ResizeSidebar extends SidebarMessage {
+export class ResizeSidebar extends BrowserMessage {
 
   delta: number
 
@@ -48,21 +46,19 @@ export class ResizeSidebar extends SidebarMessage {
 
 }
 
-export abstract class ServiceMessage extends BrowserMessage { }
-
-export class CloseSidebar extends ServiceMessage {
+export class CloseSidebar extends BrowserMessage {
   constructor() {
     super("closeSidebar")
   }
 }
 
-export class DisplaySidebar extends ServiceMessage {
+export class DisplaySidebar extends BrowserMessage {
   constructor() {
     super("displaySidebar")
   }
 }
 
-export class ActivateAgent extends ServiceMessage {
+export class ActivateAgent extends BrowserMessage {
   agentId: string
 
   constructor(agentId: string) {
@@ -71,7 +67,7 @@ export class ActivateAgent extends ServiceMessage {
   }
 }
 
-export class UserMessage extends ServiceMessage {
+export class UserMessage extends BrowserMessage {
 
   text: string
 
@@ -82,9 +78,7 @@ export class UserMessage extends ServiceMessage {
 
 }
 
-export abstract class ContentMessage extends BrowserMessage { }
-
-export class ActivatedAgent extends ContentMessage {
+export class ActivatedAgent extends BrowserMessage {
   agentId: string
   agentName: string
   agentLogo: string
@@ -97,13 +91,22 @@ export class ActivatedAgent extends ContentMessage {
   }
 }
 
-export class AiMessage extends ContentMessage {
+export class AiMessage extends BrowserMessage {
   text: string
+  isComplete: boolean
 
-  constructor(msg: string) {
+  constructor(msg: string, isComplete: boolean) {
     super("aiMessage")
     this.text = msg
+    this.isComplete = isComplete
+  }
+
+  public static incomplete(msg: string): AiMessage {
+    return new AiMessage(msg, false)
+  }
+
+  public static complete(msg = ""): AiMessage {
+    return new AiMessage(msg, true)
   }
 
 }
-

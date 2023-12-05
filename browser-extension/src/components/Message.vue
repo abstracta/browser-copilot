@@ -8,7 +8,7 @@ import YouDot from "../assets/img/you.svg"
 import NewPromptButton from "./NewPromptButton.vue"
 import CopyButton from "./CopyButton.vue"
 
-const props = defineProps<{ text: string, isUser: boolean, agentLogo: string, agentName: string, agentId: string }>()
+const props = defineProps<{ text: string, isUser: boolean, isComplete: boolean, agentLogo: string, agentName: string, agentId: string }>()
 const { t } = useI18n()
 const md = new MarkdownIt({
   highlight: (code: string, lang: string) => {
@@ -37,7 +37,7 @@ const renderedMsg = computed(() => props.isUser ? props.text.replaceAll("\n", "<
     </div>
     <div class="mt-[10px] ml-[30px]">
       <div v-html="renderedMsg" class="flex flex-col font-light text-[15px] leading-tight gap-[15px]" id="rendered-msg" />
-      <div class="ml-[10px] dot-pulse" v-if="!text" />
+      <div class="ml-[10px] dot-pulse" v-if="!isComplete" />
     </div>
   </div>
 </template>

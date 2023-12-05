@@ -22,7 +22,7 @@ onBeforeMount(() => {
       agentId.value = msg.agentId
       agentName.value = msg.agentName
       agentLogo.value = msg.agentLogo
-      messages.value.push(new ChatMessage('', false))
+      messages.value.push(ChatMessage.aiMessage())
       if (!displaying) {
         await nextTick(async () => {
           await sendToServiceWorker(new DisplaySidebar())
@@ -30,10 +30,11 @@ onBeforeMount(() => {
       }
     } else if (msg instanceof AiMessage) {
       let lastMessage = messages.value[messages.value.length - 1]
-      if (lastMessage.text === '') {
-        lastMessage.text = msg.text
+      if (!lastMessage.isComplete) {
+        lastMessage.isComplete = msg.isComplete
+        lastMessage.text += msg.text
       } else {
-        messages.value.push(new ChatMessage(msg.text, false))
+        messages.value.push(ChatMessage.aiMessage(msg.text))
       }
     }
   })
@@ -44,8 +45,8 @@ const sendToServiceWorker = async (msg: BrowserMessage) => {
 }
 
 const onUserMessage = async (msg: string) => {
-  messages.value.push(new ChatMessage(msg, true))
-  messages.value.push(new ChatMessage('', false))
+  messages.value.push(ChatMessage.userMessage(msg))
+  messages.value.push(ChatMessage.aiMessage())
   await sendToServiceWorker(new UserMessage(msg))
 }
 

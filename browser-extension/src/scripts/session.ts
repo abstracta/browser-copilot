@@ -22,7 +22,7 @@ export class TabSession {
 
   public async activate(url: string): Promise<void> {
     await this.sendMessageToTab(new ActivatedAgent(this.agent.manifest.id, this.agent.manifest.name, this.agent.logo))
-    await this.sendMessageToTab(new AiMessage(this.agent.manifest.welcomeMessage))
+    await this.sendMessageToTab(AiMessage.complete(this.agent.manifest.welcomeMessage))
     let httpAction = this.agent.activationAction?.httpRequest
     if (httpAction) {
       await fetchJson(this.solveUrlTemplate(httpAction.url, url), { method: httpAction.method })
@@ -30,8 +30,11 @@ export class TabSession {
   }
 
   public async processUserMessage(msg: string) {
-    let answer = await this.agent.ask(msg, this.id)
-    await this.sendMessageToTab(new AiMessage(answer))
+    let ret : AsyncIterable<string> = await this.agent.ask(msg, this.id)
+    for await (const part of ret) {
+      await this.sendMessageToTab(AiMessage.incomplete(part))
+    }
+    await this.sendMessageToTab(AiMessage.complete())
   }
 
   private async sendMessageToTab(message: any): Promise<void> {
@@ -58,7 +61,7 @@ export class TabSession {
     let interactionDetail = await this.findInteraction(req, action)
     let summary = await this.agent.solveInteractionSummary(interactionDetail, this.id)
     if (summary) {
-      this.sendMessageToTab(new AiMessage(summary))
+      this.sendMessageToTab(AiMessage.complete(summary))
     }
   }
 

@@ -1,17 +1,19 @@
+import asyncio
 import datetime
 import os
-from typing import List
+from typing import List, AsyncIterator
 
 import openai
 from langchain.agents import Tool, OpenAIFunctionsAgent, AgentExecutor
+from langchain.callbacks import AsyncIteratorCallbackHandler
 from langchain.chat_models import AzureChatOpenAI, ChatOpenAI
 from langchain.memory import ConversationBufferMemory, FileChatMessageHistory
 from langchain.prompts import MessagesPlaceholder
-from langchain.schema import SystemMessage, OutputParserException
+from langchain.schema import SystemMessage
+from langchain.tools import tool
 
 from gpt_agent.domain import Session
 from gpt_agent.file_system_repos import get_session_path
-from langchain.tools import tool
 
 openai.log = 'debug'
 
@@ -54,15 +56,22 @@ class Agent:
         base_url = os.getenv("OPENAI_API_BASE")
         if base_url and ".openai.azure.com" in base_url:
             return AzureChatOpenAI(deployment_name=os.getenv("AZURE_DEPLOYMENT_NAME"), temperature=temperature,
-                                   verbose=True)
+                                   verbose=True, streaming=True)
         else:
-            return ChatOpenAI(model_name=os.getenv("MODEL_NAME"), temperature=temperature, verbose=True)
+            return ChatOpenAI(model_name=os.getenv("MODEL_NAME"), temperature=temperature, verbose=True, streaming=True)
 
     def start_session(self):
         self._memory.chat_memory.add_user_message("this is my locale: " + self._session.locales[0])
 
-    async def ask(self, question: str) -> str:
-        try:
-            return await self._agent.arun(input=question)
-        except OutputParserException as e:
-            return e.llm_output
+    async def ask(self, question: str) -> AsyncIterator[str]:
+        callback = AsyncIteratorCallbackHandler()
+        task = asyncio.create_task(self._agent.arun(input=question, callbacks=[callback]))
+        resp = ""
+        async for token in callback.aiter():
+            resp += token
+            yield token
+        ret = await task
+        # when using tools tokens are not passed to the callback handler, so we need to get the response directly from
+        # agent run call
+        if ret != resp:
+            yield ret

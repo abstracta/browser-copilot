@@ -1,6 +1,6 @@
 import browser from "webextension-polyfill"
 import { Prompt } from "./prompt-repository"
-import { fetchJson, postJson } from "./http"
+import { fetchJson, fetchStreamJson, postJson } from "./http"
 
 export class Agent {
     url: string
@@ -52,9 +52,21 @@ export class Agent {
         return interaction.summary
     }
 
-    public async ask(msg: string, sessionId: string): Promise<string> {
-        let question = await postJson(this.url + "/sessions/" + sessionId + "/questions", { question: msg })
-        return question.answer
+    public async * ask(msg: string, sessionId: string): AsyncIterable<string> {
+        let ret = await fetchStreamJson(this.url + "/sessions/" + sessionId + "/questions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ question: msg })
+        })
+        if (ret.next) {
+            for await (const part of ret) {
+                yield part
+            }
+        } else {
+            yield ret.answer
+        }
     }
 
 }

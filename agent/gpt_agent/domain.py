@@ -12,11 +12,8 @@ class Session(SessionBase):
     id: uuid.UUID = Field(default_factory=uuid.uuid4)
 
 
-class QuestionBase(BaseModel):
+class Question(BaseModel):
     id: uuid.UUID = Field(default_factory=uuid.uuid4)
+    session: Session = Field(exclude=True)
     question: str
     answer: str
-
-
-class Question(QuestionBase):
-    session: Session = Field(exclude=True)
