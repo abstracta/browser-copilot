@@ -1,12 +1,12 @@
 <script lang="ts" setup>
 import { ref, onBeforeMount, nextTick } from 'vue'
 import browser from "webextension-polyfill"
-import { BrowserMessage, ToggleSidebar, DisplaySidebar, ActivatedAgent, AiMessage, UserMessage, ActivateAgent, CloseSidebar } from "../scripts/browser-message"
+import { BrowserMessage, DisplaySidebar, ActivatedAgent, AiMessage, UserMessage, ActivateAgent, CloseSidebar } from "../scripts/browser-message"
 import CopilotChat, { ChatMessage } from "../components/CopilotChat.vue"
 import CopilotList from "../components/CopilotList.vue"
 
 
-let displaying = false
+const sidebar = ref<HTMLDivElement>()
 const agentId = ref<string>("")
 const agentLogo = ref<string>("")
 const agentName = ref<string>("")
@@ -16,14 +16,12 @@ const messages = ref<ChatMessage[]>([])
 onBeforeMount(() => {
   browser.runtime.onMessage.addListener(async (m: any) => {
     let msg = BrowserMessage.fromJsonObject(m)
-    if (msg instanceof ToggleSidebar) {
-      displaying = !displaying
-    } else if (msg instanceof ActivatedAgent) {
+    if (msg instanceof ActivatedAgent) {
       agentId.value = msg.agentId
       agentName.value = msg.agentName
       agentLogo.value = msg.agentLogo
       messages.value.push(ChatMessage.aiMessage())
-      if (!displaying) {
+      if (sidebar.value?.clientWidth == 0) {
         await nextTick(async () => {
           await sendToServiceWorker(new DisplaySidebar())
         })
@@ -81,7 +79,7 @@ const closeSidebar = () => {
 </script>
 
 <template>
-  <div class="fixed flex flex-col left-[-10px] w-full h-[var(--sidebar-height)] justify-left m-[var(--spacing)] border-[.1px] border-slate-500 bg-[var(--background-color)] rounded-tl-[var(--top-round-corner)] rounded-bl-[var(--bottom-round-corner)]" id="sidebar">
+  <div class="fixed flex flex-col left-[-10px] w-full h-[var(--sidebar-height)] justify-left m-[var(--spacing)] border-[.1px] border-slate-500 bg-[var(--background-color)] rounded-tl-[var(--top-round-corner)] rounded-bl-[var(--bottom-round-corner)]" id="sidebar" ref="sidebar">
     <div class="absolute left-0 z-[1000] cursor-ew-resize w-[var(--spacing)] h-full" @mousedown="startResize" />
     <CopilotChat v-if="agentId" :messages="messages" :agent-id="agentId" :agent-name="agentName" :agent-logo="agentLogo"
       @userMessage="onUserMessage" @close="closeSidebar" />
