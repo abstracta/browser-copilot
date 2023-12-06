@@ -2,63 +2,63 @@
   "lockfile_version": "1",
   "packages": {
     "nodePackages.pnpm@latest": {
-      "last_modified": "2023-11-17T14:14:56Z",
-      "resolved": "github:NixOS/nixpkgs/a71323f68d4377d12c04a5410e214495ec598d4c#nodePackages.pnpm",
+      "last_modified": "2023-11-23T16:10:41Z",
+      "resolved": "github:NixOS/nixpkgs/e8b0430bc4c4235607ae102010dec2ba32e8c0ca#nodePackages.pnpm",
       "source": "devbox-search",
-      "version": "8.10.2",
+      "version": "8.10.5",
       "systems": {
         "aarch64-linux": {
-          "store_path": "/nix/store/4hhi4gqylxiiyw8kq1zii4s0xs7m6m51-pnpm-8.10.2"
+          "store_path": "/nix/store/16r331i5imngs5kfzkdnxa28n3ny14j0-pnpm-8.10.5"
         },
         "x86_64-linux": {
-          "store_path": "/nix/store/dfld7gq52dvyb2gmxr2drfk0w9985q56-pnpm-8.10.2"
+          "store_path": "/nix/store/idw48sa6db5dfxz6mnakwbz9k9fjkppm-pnpm-8.10.5"
         }
       }
     },
     "nodejs@latest": {
-      "last_modified": "2023-11-19T17:46:56Z",
-      "resolved": "github:NixOS/nixpkgs/0bf3f5cf6a98b5d077cdcdb00a6d4b3d92bc78b5#nodejs_21",
+      "last_modified": "2023-12-01T12:14:05Z",
+      "resolved": "github:NixOS/nixpkgs/77da99a144cd341408308e0a37622f5edcc6c5ba#nodejs_21",
       "source": "devbox-search",
-      "version": "21.2.0",
+      "version": "21.3.0",
       "systems": {
         "aarch64-darwin": {
-          "store_path": "/nix/store/waq8bb12nbqwxxn1lgvdzsgs0gqk0d04-nodejs-21.2.0"
+          "store_path": "/nix/store/14v3za8nwj0pzyslxgk91ivrwli4r5d7-nodejs-21.3.0"
         },
         "aarch64-linux": {
-          "store_path": "/nix/store/v03cn5xw03nxykgix04r1l31jjrgf9d3-nodejs-21.2.0"
+          "store_path": "/nix/store/zs16ndz5d90ybi31b0my5q63ym12jmjx-nodejs-21.3.0"
         },
         "x86_64-darwin": {
-          "store_path": "/nix/store/sv6nivfsqcl8s1dhqjpjy8dqvbx9mxwl-nodejs-21.2.0"
+          "store_path": "/nix/store/s5f7nr4g0mp3x7p2c5lskdwqb8rd8nwh-nodejs-21.3.0"
         },
         "x86_64-linux": {
-          "store_path": "/nix/store/iklfdn5l792z46dl5qq9zqzqsmp2m4m9-nodejs-21.2.0"
+          "store_path": "/nix/store/5gx81a63z7mklr8kmjxybc3ysjn4gmf2-nodejs-21.3.0"
         }
       }
     },
     "poetry@latest": {
-      "last_modified": "2023-11-15T19:29:39Z",
-      "plugin_version": "0.0.3",
-      "resolved": "github:NixOS/nixpkgs/61202fc8677a6e9e0a82eb6610eeef28852fc790#poetry",
+      "last_modified": "2023-12-03T07:45:23Z",
+      "plugin_version": "0.0.4",
+      "resolved": "github:NixOS/nixpkgs/ec04772e7516b6d58d98b491e68b329b7558b14d#poetry",
       "source": "devbox-search",
-      "version": "1.6.1",
+      "version": "1.7.1",
       "systems": {
         "aarch64-darwin": {
-          "store_path": "/nix/store/7i5h0pfkg3qv0b97dkhgq53i2bb2s4sw-python3.11-poetry-1.6.1"
+          "store_path": "/nix/store/xivljy0anq807yxavx5bswzc8rj14mqr-python3.11-poetry-1.7.1"
         },
         "aarch64-linux": {
-          "store_path": "/nix/store/12zqkx7h5gwi485np0fcg4n8lafxql7w-python3.11-poetry-1.6.1"
+          "store_path": "/nix/store/d3gavxnsv37rw2qdz61gnjyv8ag9sk62-python3.11-poetry-1.7.1"
         },
         "x86_64-darwin": {
-          "store_path": "/nix/store/2svxaq779cpmrsv7l487rb1q5lqdbg0j-python3.11-poetry-1.6.1"
+          "store_path": "/nix/store/jicdqdakx7xah7gzdldd5q06xrm3rdnh-python3.11-poetry-1.7.1"
         },
         "x86_64-linux": {
-          "store_path": "/nix/store/r4avn3bnyfgmgpb30aj6skb4iglg9i9d-python3.11-poetry-1.6.1"
+          "store_path": "/nix/store/ris3jsq77jdk70gzzjsqsydwfgilbigg-python3.11-poetry-1.7.1"
         }
       }
     },
     "python3@latest": {
       "last_modified": "2023-11-19T17:46:56Z",
-      "plugin_version": "0.0.1",
+      "plugin_version": "0.0.3",
       "resolved": "github:NixOS/nixpkgs/0bf3f5cf6a98b5d077cdcdb00a6d4b3d92bc78b5#python3",
       "source": "devbox-search",
       "version": "3.11.6",
