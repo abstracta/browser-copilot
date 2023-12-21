@@ -13,6 +13,9 @@
       "echo 'Welcome to devbox!' > /dev/null"
     ],
     "scripts": {
+      "keycloak": [
+        "docker-compose up keycloak"
+      ],
       "agent": [
         "cd agent && poetry run uvicorn gpt_agent.api:app --reload"
       ],

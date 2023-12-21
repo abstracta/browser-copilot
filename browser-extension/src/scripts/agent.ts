@@ -1,6 +1,7 @@
 import browser from "webextension-polyfill"
 import { Prompt } from "./prompt-repository"
-import { fetchJson, fetchStreamJson, postJson } from "./http"
+import { AuthService, AuthConfig } from "./auth"
+import { fetchJson, fetchStreamJson } from "./http"
 
 export class Agent {
     url: string
@@ -25,8 +26,28 @@ export class Agent {
         this.activationAction = this.activationRule?.actions.find(a => a.activate)!.activate!
     }
 
-    public async createSession(locales: string[]): Promise<AgentSession> {
-        return await postJson(this.url + "/sessions", { locales: locales })
+    public async createSession(locales: string[], authService?: AuthService): Promise<AgentSession> {
+        if (authService) { 
+            await authService.login()
+        }
+        return await this.postJson(this.url + "/sessions", { locales: locales }, authService)
+    }
+
+    private async postJson(url: string, body: any, authService?: AuthService): Promise<any> {
+        return await fetchJson(url, await this.buildHttpPost(body, authService))
+    }
+
+    private async buildHttpPost(body: any, authService?: AuthService): Promise<RequestInit> {
+        let headers = {"Content-Type": "application/json"} as any
+        if (authService) {
+            let user = await authService.getUser()
+            headers['Authorization'] = "Bearer " + user!.access_token
+        }
+        return {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify(body)
+        }
     }
 
     public activatesOn(req: browser.WebRequest.OnCompletedDetailsType): boolean {
@@ -47,19 +68,13 @@ export class Agent {
             .flatMap(r => r.actions) : []
     }
 
-    public async solveInteractionSummary(detail: any, sessionId: string): Promise<string> {
-        let interaction = await postJson(this.url + "/sessions/" + sessionId + "/interactions", detail)
+    public async solveInteractionSummary(detail: any, sessionId: string, authService?: AuthService): Promise<string> {
+        let interaction = await this.postJson(this.url + "/sessions/" + sessionId + "/interactions", detail, authService)
         return interaction.summary
     }
 
-    public async * ask(msg: string, sessionId: string): AsyncIterable<string> {
-        let ret = await fetchStreamJson(this.url + "/sessions/" + sessionId + "/questions", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ question: msg })
-        })
+    public async * ask(msg: string, sessionId: string, authService?: AuthService): AsyncIterable<string> {
+        let ret = await fetchStreamJson(this.url + "/sessions/" + sessionId + "/questions", await this.buildHttpPost({ question: msg }, authService))
         if (ret.next) {
             for await (const part of ret) {
                 yield part
@@ -78,6 +93,7 @@ export interface AgentManifest {
     prompts?: Prompt[]
     onSessionClose?: EndAction
     onHttpRequest?: AgentRule[]
+    auth?: AuthConfig
 }
 
 export interface AgentRule {

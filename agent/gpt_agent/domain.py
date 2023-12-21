@@ -10,6 +10,7 @@ class SessionBase(BaseModel):
 
 class Session(SessionBase):
     id: uuid.UUID = Field(default_factory=uuid.uuid4)
+    user: str
 
 
 class Question(BaseModel):

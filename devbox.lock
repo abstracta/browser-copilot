@@ -36,20 +36,20 @@
       }
     },
     "poetry@latest": {
-      "last_modified": "2023-12-03T07:45:23Z",
+      "last_modified": "2023-12-09T06:39:50Z",
       "plugin_version": "0.0.4",
-      "resolved": "github:NixOS/nixpkgs/ec04772e7516b6d58d98b491e68b329b7558b14d#poetry",
+      "resolved": "github:NixOS/nixpkgs/29558c0722ffd40ff625256e16259168b7c03ed1#poetry",
       "source": "devbox-search",
       "version": "1.7.1",
       "systems": {
         "aarch64-darwin": {
-          "store_path": "/nix/store/xivljy0anq807yxavx5bswzc8rj14mqr-python3.11-poetry-1.7.1"
+          "store_path": "/nix/store/957yy01x2lr7ylv2fr2dwk8wjxpnxxp8-python3.11-poetry-1.7.1"
         },
         "aarch64-linux": {
           "store_path": "/nix/store/d3gavxnsv37rw2qdz61gnjyv8ag9sk62-python3.11-poetry-1.7.1"
         },
         "x86_64-darwin": {
-          "store_path": "/nix/store/jicdqdakx7xah7gzdldd5q06xrm3rdnh-python3.11-poetry-1.7.1"
+          "store_path": "/nix/store/8ji3jz47dg7kdr6fla9vy28a5a8ifj6f-python3.11-poetry-1.7.1"
         },
         "x86_64-linux": {
           "store_path": "/nix/store/ris3jsq77jdk70gzzjsqsydwfgilbigg-python3.11-poetry-1.7.1"

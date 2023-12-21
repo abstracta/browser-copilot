@@ -4,6 +4,7 @@ import { findAgentById, findAllAgents, addAgent } from "./scripts/agent-reposito
 import { findSessionByTabId, saveSession, removeSession } from "./scripts/session-repository"
 import { saveAgentPrompts } from "./scripts/prompt-repository"
 import { TabSession } from "./scripts/session"
+import { AuthService } from "./scripts/auth"
 import { BrowserMessage, ActivateAgent, CloseSidebar, DisplaySidebar, ToggleSidebar, UserMessage } from "./scripts/browser-message"
 
 const createToggleContextMenu = () => {
@@ -18,8 +19,9 @@ const activateAgent = async (agent: Agent, tabId: number, url: string) => {
   if (await findSessionByTabId(tabId)) {
     return
   }
-  let resp = await agent.createSession(await browser.i18n.getAcceptLanguages())
-  let session = new TabSession(resp.id, tabId, agent, url)
+  let authService = agent.manifest.auth ? new AuthService(agent.manifest.auth) : undefined
+  let resp = await agent.createSession(await browser.i18n.getAcceptLanguages(), authService)
+  let session = new TabSession(resp.id, tabId, agent, url, authService)
   await saveSession(session)
   await updateRequestRules(session)
   await session.activate(url)

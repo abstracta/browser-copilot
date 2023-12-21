@@ -1,5 +1,6 @@
 import { Agent, RecordInteractionRuleAction } from "./agent"
 import { fetchJson } from "./http"
+import { AuthService } from "./auth"
 import browser from "webextension-polyfill"
 import { ActivatedAgent, AiMessage } from "./browser-message"
 
@@ -8,16 +9,19 @@ export class TabSession {
   tabId: number
   url: string
   agent: Agent
+  authService?: AuthService
 
-  constructor(id: string, tabId: number, agent: Agent, url: string) {
+
+  constructor(id: string, tabId: number, agent: Agent, url: string, authService?: AuthService) {
     this.id = id
     this.tabId = tabId!
     this.agent = agent
     this.url = url
+    this.authService = authService
   }
 
   public static fromJsonObject(obj: any): TabSession {
-    return new TabSession(obj.id, obj.tabId, Agent.fromJsonObject(obj.agent), obj.url)
+    return new TabSession(obj.id, obj.tabId, Agent.fromJsonObject(obj.agent), obj.url, AuthService.fromJsonObject(obj.authService))
   }
 
   public async activate(url: string): Promise<void> {
@@ -30,7 +34,7 @@ export class TabSession {
   }
 
   public async processUserMessage(msg: string) {
-    let ret : AsyncIterable<string> = await this.agent.ask(msg, this.id)
+    let ret: AsyncIterable<string> = await this.agent.ask(msg, this.id, this.authService)
     for await (const part of ret) {
       await this.sendMessageToTab(AiMessage.incomplete(part))
     }
@@ -59,7 +63,7 @@ export class TabSession {
 
   private async recordInteraction(req: browser.WebRequest.OnCompletedDetailsType, action: RecordInteractionRuleAction) {
     let interactionDetail = await this.findInteraction(req, action)
-    let summary = await this.agent.solveInteractionSummary(interactionDetail, this.id)
+    let summary = await this.agent.solveInteractionSummary(interactionDetail, this.id, this.authService)
     if (summary) {
       this.sendMessageToTab(AiMessage.complete(summary))
     }

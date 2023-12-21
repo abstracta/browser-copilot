@@ -12,17 +12,7 @@ const fetchResponse = async (url: string, options?: RequestInit) => {
   return ret
 }
 
-export const postJson = async (url: string, body: any): Promise<any> => {
-  return await fetchJson(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(body)
-  })
-}
-
-export async function* fetchStreamJson(url: string, options?: RequestInit) : AsyncIterable<string> | any {
+export async function* fetchStreamJson(url: string, options?: RequestInit): AsyncIterable<string> | any {
   let resp = await fetchResponse(url, options)
   let contentType = resp.headers.get("content-type")
   if (contentType?.startsWith("text/event-stream")) {
@@ -53,13 +43,13 @@ async function* fetchSSEStream(resp: Response): AsyncIterable<string> {
 class ServerSentEvent {
   event?: string
   data: string
-  
+
   constructor(data: string, event?: string) {
     this.data = data
     this.event = event
   }
 
-  public static fromBytes(bs: Uint8Array) : ServerSentEvent {
+  public static fromBytes(bs: Uint8Array): ServerSentEvent {
     let text = new TextDecoder("utf-8").decode(bs)
     let parts = text.split("\r\n")
     let i = 0

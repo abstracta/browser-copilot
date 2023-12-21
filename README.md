@@ -27,6 +27,8 @@ At any point, you can close the copilot to later resume the conversation by the 
 
 If you don't know any copilot URLs, this project includes a simple copilot implementation in [agent folder](./agent). You can start it by copying [agent/sample.env](./agent/sample.env) to `agent/.env`, changing the environment variables on it, and running `docker-compose up` (docker is required for this). Once started, you can configure your extension to use it by adding a copilot with the URL `http://localhost:8000`.
 
+When you activate de copilot (click on the copilots list), it will request some credentials. Use `test` user and `test` password to login.
+
 In the future, we plan to add a catalog of copilots contributed by the community. Therefore, **if you create new copilots, please let us know** so we can include them in the initial catalog.
 
 ## Development
@@ -44,6 +46,9 @@ devbox run install
 ```
 
 Next, set appropriate environment variables in `agent/.env`.
+
+> To speed up development, you can comment out the Keycloak section, so you don't need to authenticate every time you want to try your copilot in the extension.
+> If you don't comment out the Keycloak section, then you need to run `devbox run keycloak` to sping up Keycloak for authentication and use `test` `test` credentials for login (when requested by the browser extension).
 
 To run the agent in dev mode, enabling automatic hot-reloading whenever any changes are detected in the agent source files, execute the following command:
 

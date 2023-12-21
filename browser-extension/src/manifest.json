@@ -1,5 +1,6 @@
 {
   "name": "Browser Copilot",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqP/BkxnfnNstFPmoRNfwMlcke2Es8xPyN9kq6yHyBk1iA3PDb6OM2Ax1K8BsXMpDH3WSgviMIgrgMVorK+B/YVW9nvKwiWFqgb7pFsB6AQCTEz0gQMr6wZkafott+2JrvOPzratByQcNaz28YWaQZYLtwkFd3DSaz8pawOOv9a2lKHivZqAHpmcUq3hxgcwvkAqJjRadHHRn8fXBsjTqneFXcE0rgDxr3Zm1WTcm4ybTm8JAPRZ+eSoTiFBmBCvrztUtpNNODGs3IE27wLXEMrJ5Pq3vH4Z3PBJUg3Ho5bd9EGTmth5U2WcQ2B+EwVpiuaSc33RkXjltan2ly7evrQIDAQAB",
   "{{chrome}}.manifest_version": 3,
   "{{firefox}}.manifest_version": 2,
   "icons": {
@@ -15,7 +16,8 @@
     "contextMenus",
     "webRequest",
     "declarativeNetRequest",
-    "clipboardWrite"
+    "clipboardWrite",
+    "identity"
   ],
   "host_permissions": [
     "*://*/"

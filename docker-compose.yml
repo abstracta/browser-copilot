@@ -4,4 +4,16 @@ services:
     build: agent
     ports:
       - "8000:8000"
-    env_file: agent/.env
+    environment:
+      - OPENID_URL=http://keycloak:8080/realms/browser-copilot
+      - MANIFEST_OPENID_URL=http://localhost:8080/realms/browser-copilot
+  keycloak:
+    image: quay.io/keycloak/keycloak
+    ports: 
+     - "8080:8080"
+    environment:
+     - KEYCLOAK_ADMIN=admin
+     - KEYCLOAK_ADMIN_PASSWORD=admin
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import
+    command: ["start-dev", "--import-realm"]

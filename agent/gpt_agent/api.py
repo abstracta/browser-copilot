@@ -1,10 +1,11 @@
 import os
 import traceback
-from typing import AsyncIterator
+from typing import AsyncIterator, Annotated
 
 import dotenv
-from fastapi import FastAPI, HTTPException, status
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi import Depends, FastAPI, HTTPException, status, Request
+from fastapi.responses import FileResponse, StreamingResponse, Response
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from sse_starlette.sse import ServerSentEvent
 
@@ -13,25 +14,34 @@ from gpt_agent.domain import Session, Question, SessionBase
 from gpt_agent.file_system_repos import SessionsRepository, QuestionsRepository
 
 dotenv.load_dotenv()
+
+from gpt_agent.auth import get_current_user
+
 app = FastAPI()
 assets_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'assets')
+templates = Jinja2Templates(directory=assets_path)
 sessions_repo = SessionsRepository()
 questions_repo = QuestionsRepository()
 
 
 @app.get('/manifest.json')
-async def get_manifest():
-    return FileResponse(os.path.join(assets_path, 'manifest.json'))
+async def get_manifest(request: Request) -> Response:
+    return templates.TemplateResponse("manifest.json", {
+        "request": request,
+        "openid_url": os.getenv("MANIFEST_OPENID_URL", os.getenv("OPENID_URL")),
+        "openid_client_id": os.getenv("OPENID_CLIENT_ID"),
+        "openid_scope": os.getenv("OPENID_SCOPE")
+    }, media_type='application/json')
 
 
 @app.get('/logo.png')
-async def get_logo():
+async def get_logo() -> FileResponse:
     return FileResponse(os.path.join(assets_path, 'logo.png'))
 
 
 @app.post('/sessions', status_code=status.HTTP_201_CREATED)
-async def create_session(req: SessionBase) -> Session:
-    ret = Session(**req.model_dump())
+async def create_session(req: SessionBase, user: Annotated[str, Depends(get_current_user)]) -> Session:
+    ret = Session(**req.model_dump(), user=user)
     await sessions_repo.save_session(ret)
     Agent(ret).start_session()
     return ret
@@ -41,18 +51,24 @@ class QuestionRequest(BaseModel):
     question: str
 
 
-async def _find_session(session_id: str) -> Session:
+@app.post('/sessions/{session_id}/questions')
+async def answer_question(
+        session_id: str, req: QuestionRequest, user: Annotated[str, Depends(get_current_user)]) -> StreamingResponse:
+    session = await _find_session(session_id, user)
+    # This copilot uses response streaming which allows users to start get a response as soon as
+    # possible, which is particularly important when interacting with LLMs that support response
+    # streaming and may take some time to end answering a given response.
+    # If you don't want to use response streaming you can just return a pydantic object like in
+    # create session endpoint.
+    return StreamingResponse(agent_response_stream(req, session), media_type="text/event-stream")
+
+
+async def _find_session(session_id: str, user: str) -> Session:
     ret = await sessions_repo.find_session(session_id)
-    if not ret:
+    if not ret or ret.user != user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f'session {session_id} not found')
     return ret
-
-
-@app.post('/sessions/{session_id}/questions')
-async def answer_question(session_id: str, req: QuestionRequest) -> StreamingResponse:
-    session = await _find_session(session_id)
-    return StreamingResponse(agent_response_stream(req, session), media_type="text/event-stream")
 
 
 async def agent_response_stream(req: QuestionRequest, session: Session) -> AsyncIterator[str]:

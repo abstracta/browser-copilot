@@ -9,7 +9,7 @@ export const findSessionByTabId = async (tabId: number): Promise<TabSession | un
 }
 
 const getAllSessions = async () => {
-  const { sessions } = await browser.storage.local.get("sessions")
+  const { sessions } = await browser.storage.session.get("sessions")
   return sessions || {}
 }
 
@@ -20,7 +20,7 @@ export const saveSession = async (session: TabSession) => {
 }
 
 const updateSessions = async (sessions: any) => {
-  await browser.storage.local.set({ sessions: sessions })
+  await browser.storage.session.set({ sessions: sessions })
 }
 
 export const removeSession = async (session: TabSession) => {
