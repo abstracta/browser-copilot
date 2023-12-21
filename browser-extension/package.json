@@ -2,7 +2,7 @@
   "name": "browser-copilot",
   "description": "Browser Copilot allows you to use existing or custom-built AI assistants to help you in everyday web application tasks",
   "private": true,
-  "version": "0.4.1",
+  "version": "0.5",
   "type": "module",
   "scripts": {
     "dev": "vite",
