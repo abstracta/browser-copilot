@@ -31,11 +31,13 @@ async function* fetchSSEStream(resp: Response): AsyncIterable<string> {
   while (!done) {
     let result = await reader.read()
     done = result.done
-    let event = ServerSentEvent.fromBytes(result.value!)
-    if (event.event === "error") {
-      throw Error(event.data)
-    } else {
-      yield event.data
+    let events = ServerSentEvent.fromBytes(result.value!)
+    for (const event of events) {
+      if (event.event === "error") {
+        throw Error(event.data)
+      } else {
+        yield event.data
+      }
     }
   }
 }
@@ -49,18 +51,21 @@ class ServerSentEvent {
     this.event = event
   }
 
-  public static fromBytes(bs: Uint8Array): ServerSentEvent {
+  public static fromBytes(bs: Uint8Array): ServerSentEvent[] {
     let text = new TextDecoder("utf-8").decode(bs)
-    let parts = text.split("\r\n")
-    let i = 0
-    let event
+    let events = text.split(/\r\n\r\n/)
+    return events.map(e => ServerSentEvent.parseEvent(e))
+  }
+
+  private static parseEvent(event: string): ServerSentEvent {
+    let parts = event.split(/\r\n/)
+    let eventType
     let eventPrefix = "event: "
-    if (parts[i].startsWith(eventPrefix)) {
-      event = parts[i].substring(eventPrefix.length)
-      i++
+    if (parts[0].startsWith(eventPrefix)) {
+      eventType = parts[0].substring(eventPrefix.length)
     }
     let dataPrefix = "data: "
     let data = parts.filter(p => p.startsWith(dataPrefix)).map(p => p.substring(dataPrefix.length)).join("\n")
-    return new ServerSentEvent(data, event)
+    return new ServerSentEvent(data, eventType)
   }
 }
