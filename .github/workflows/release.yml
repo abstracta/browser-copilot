@@ -34,6 +34,14 @@ jobs:
           commit_message: '[skip ci] Set release version'
           branch: main
           file_pattern: 'browser-extension/package.json'
+      - name: Upload & release
+        uses: mnao305/chrome-extension-upload@v4.0.1
+        with:
+          file-path: browser-extension/dist/browser-copilot.zip
+          extension-id: cbhcdfecmeoaikjoapjkkpalaehmbogp
+          client-id: ${{ secrets.CLIENT_ID }}
+          client-secret: ${{ secrets.CLIENT_SECRET }}
+          refresh-token: ${{ secrets.REFRESH_TOKEN }}
       - name: publish GH release
         uses: ncipollo/release-action@v1
         with:
@@ -44,4 +52,3 @@ jobs:
           updateOnlyUnreleased: true
           draft: false
           artifacts: "browser-extension/dist/browser-copilot.zip"
-
