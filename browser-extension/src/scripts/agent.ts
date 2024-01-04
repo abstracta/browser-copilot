@@ -11,6 +11,7 @@ export class Agent {
     activationAction: ActivationAction
 
     public static async fromUrl(url: string): Promise<Agent> {
+        url = url.endsWith("/") ? url.slice(0, -1) : url
         return new Agent(url, await fetchJson(url + "/manifest.json"))
     }
 
