@@ -31,7 +31,7 @@ const resize = (delta: number) => {
 
 let iframe = document.createElement('iframe')
 setSidebarIframeStyle(iframe)
-iframe.allow = "clipboard-write"
+iframe.allow = "clipboard-write; microphone"
 iframe.src = browser.runtime.getURL("src/index.html")
 document.body.appendChild(iframe)
 

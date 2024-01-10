@@ -108,7 +108,7 @@ browser.runtime.onMessage.addListener(async (m: any, sender) => {
     toggleSidebar(tabId)
   } else if (msg instanceof UserMessage) {
     let session = (await findSessionByTabId(tabId))!
-    await session.processUserMessage(msg.text)
+    await session.processUserMessage(msg.text, msg.file)
   }
 })
 

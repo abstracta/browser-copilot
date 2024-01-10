@@ -8,7 +8,7 @@ import YouDot from "../assets/img/you.svg"
 import NewPromptButton from "./NewPromptButton.vue"
 import CopyButton from "./CopyButton.vue"
 
-const props = defineProps<{ text: string, isUser: boolean, isComplete: boolean, agentLogo: string, agentName: string, agentId: string }>()
+const props = defineProps<{ text: string, file: Record<string, string>, isUser: boolean, isComplete: boolean, agentLogo: string, agentName: string, agentId: string }>()
 const { t } = useI18n()
 const md = new MarkdownIt({
   highlight: (code: string, lang: string) => {
@@ -32,11 +32,18 @@ const renderedMsg = computed(() => props.isUser ? props.text.replaceAll("\n", "<
       <span class="text-[15px]">{{ isUser ? t('you') : agentName }}</span>
       <div class="flex-auto flex justify-end">
         <CopyButton v-if="!isUser && text" :text="text" :html="renderedMsg" />
-        <NewPromptButton v-if="isUser" :is-large-icon="false" :text="text" :agent-id="agentId" />
+        <NewPromptButton v-if="isUser && !file" :is-large-icon="false" :text="text" :agent-id="agentId" />
       </div>
     </div>
     <div class="mt-[10px] ml-[30px]">
-      <div v-html="renderedMsg" class="flex flex-col font-light text-[15px] leading-tight gap-[15px]" id="rendered-msg" />
+      <div class="flex flex-col font-light text-[15px] leading-tight gap-[15px]" id="rendered-msg">
+        <template v-if="file.data">
+          <audio controls><source :src="file.url" type="audio/webm"></audio>
+        </template>
+        <template v-if="text">
+          <div v-html="renderedMsg" />
+        </template>
+      </div>
       <div class="ml-[10px] dot-pulse" v-if="!isComplete" />
     </div>
   </div>

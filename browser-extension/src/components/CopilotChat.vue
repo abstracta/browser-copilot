@@ -4,22 +4,24 @@ let currentMsgId = 2
 export class ChatMessage {
   id: number
   text: string
+  file: Record<string, string>
   isUser: boolean
   isComplete: boolean
 
-  constructor(text: string, isUser: boolean, isComplete: boolean) {
+  constructor(text: string, file: Record<string, string>, isUser: boolean, isComplete: boolean) {
     this.id = currentMsgId++
     this.text = text
+    this.file = file
     this.isUser = isUser
     this.isComplete = isComplete
   }
 
-  public static userMessage(text: string): ChatMessage {
-    return new ChatMessage(text, true, true)
+  public static userMessage(text: string, file: Record<string, string>): ChatMessage {
+    return new ChatMessage(text, file, true, true)
   }
 
   public static aiMessage(text?: string): ChatMessage {
-    return new ChatMessage(text || '', false, text !== undefined)
+    return new ChatMessage(text || '', {}, false, text !== undefined)
   }
 }
 </script>
@@ -36,7 +38,7 @@ import BtnClose from './BtnClose.vue'
 const props = defineProps<{ agentId: string, agentName: string, agentLogo: string, messages: ChatMessage[] }>()
 const emit = defineEmits<{
   (e: 'close'): void,
-  (e: 'userMessage', text: string): void
+  (e: 'userMessage', text: string, file: Record<string, string>): void
 }>()
 
 const messagesDiv = ref<HTMLDivElement>()
@@ -52,8 +54,8 @@ const adjustMessagesScroll = async () => {
   })
 }
 
-const onUserMessage = async (text: string) => {
-  emit('userMessage', text)
+const onUserMessage = async (text: string, file: Record<string, string>) => {
+  emit('userMessage', text, file)
 }
 
 const lastMessage = computed((): ChatMessage => props.messages[props.messages.length - 1])
@@ -74,7 +76,7 @@ const lastMessage = computed((): ChatMessage => props.messages[props.messages.le
     <template v-slot:content>
       <div class="h-full flex flex-col">
         <div class="h-full flex flex-col overflow-y-auto mb-4 rounded-[var(--spacing)]" ref="messagesDiv">
-          <Message v-for="message in messages" :key="message.id" :text="message.text" :is-user="message.isUser" 
+          <Message v-for="message in messages" :key="message.id" :text="message.text" :file="message.file" :is-user="message.isUser" 
             :is-complete="message.isComplete" :agent-logo="agentLogo" :agent-name="agentName" :agent-id="agentId" />
         </div>
         <ChatInput @send-message="onUserMessage" :can-send-message="lastMessage.isComplete" :agent-id="agentId" />

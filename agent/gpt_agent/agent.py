@@ -2,8 +2,8 @@ import asyncio
 import datetime
 import os
 from typing import List, AsyncIterator
-
 import openai
+import requests
 from langchain.agents import Tool, OpenAIFunctionsAgent, AgentExecutor
 from langchain.callbacks import AsyncIteratorCallbackHandler
 from langchain_community.chat_models import AzureChatOpenAI, ChatOpenAI
@@ -14,9 +14,7 @@ from langchain.tools import tool
 
 from gpt_agent.domain import Session
 from gpt_agent.file_system_repos import get_session_path
-
 openai.log = 'debug'
-
 
 # just a sample tool to showcase how you can create your own set of tools
 @tool
@@ -62,6 +60,23 @@ class Agent:
 
     def start_session(self):
         self._memory.chat_memory.add_user_message("this is my locale: " + self._session.locales[0])
+
+    def transcript(self, audio_file_path: str) -> str:
+        try:
+            headers = {
+                    "api-key": os.getenv('OPENAI_WHISPER_API_KEY')
+            }
+
+            files = {'file': open(audio_file_path, 'rb')}
+            url = os.getenv("OPENAI_WHISPER_API_BASE") + '?api-version=' + os.getenv("OPENAI_WHISPER_API_VERSION")
+            response = requests.post(url, headers=headers, files=files)
+            if response.status_code != 200:
+                raise Exception(f"{response.status_code}: {response.text}")
+            return response.json()["text"]
+        
+        except Exception as e:
+            raise Exception(f'Error while transcribing audio file {audio_file_path}', e)
+
 
     async def ask(self, question: str) -> AsyncIterator[str]:
         callback = AsyncIteratorCallbackHandler()

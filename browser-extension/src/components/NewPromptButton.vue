@@ -26,7 +26,7 @@ const close = () => {
         <circle-plus-icon class="ml-[5px]"/></button>
     </div>
     <div v-else>
-      <circle-plus-icon class="action-icon" @click="showModal = true" />
+      <circle-plus-icon class="action-icon relative right-[5px]" @click="showModal = true" />
     </div>
     <Teleport to="#sidebar">
       <PromptEditor :text="text" :show="showModal" @close="close" @saved="onSaved" :agent-id="agentId" />

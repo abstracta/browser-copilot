@@ -18,3 +18,8 @@ class Question(BaseModel):
     session: Session = Field(exclude=True)
     question: str
     answer: str
+
+class TranscriptionQuestion(BaseModel):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4)
+    session: Session = Field(exclude=True)
+    base64: str

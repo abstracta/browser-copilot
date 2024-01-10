@@ -42,10 +42,10 @@ const sendToServiceWorker = async (msg: BrowserMessage) => {
   await browser.runtime.sendMessage(msg)
 }
 
-const onUserMessage = async (msg: string) => {
-  messages.value.push(ChatMessage.userMessage(msg))
+const onUserMessage = async (msg: string, file: Record<string, string>) => {
+  messages.value.push(ChatMessage.userMessage(msg, file))
   messages.value.push(ChatMessage.aiMessage())
-  await sendToServiceWorker(new UserMessage(msg))
+  await sendToServiceWorker(new UserMessage(msg, file))
 }
 
 const onActivateAgent = async (agentId: string) => {

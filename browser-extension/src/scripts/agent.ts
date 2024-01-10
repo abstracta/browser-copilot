@@ -3,6 +3,7 @@ import { Prompt } from "./prompt-repository"
 import { AuthService, AuthConfig } from "./auth"
 import { fetchJson, fetchStreamJson } from "./http"
 
+
 export class Agent {
     url: string
     logo: string
@@ -12,7 +13,7 @@ export class Agent {
 
     public static async fromUrl(url: string): Promise<Agent> {
         url = url.endsWith("/") ? url.slice(0, -1) : url
-        return new Agent(url, await fetchJson(url + "/manifest.json"))
+        return new Agent(url, await fetchJson(`${url}/manifest.json`))
     }
 
     public static fromJsonObject(obj: any): Agent {
@@ -21,7 +22,7 @@ export class Agent {
 
     private constructor(url: string, manifest: AgentManifest) {
         this.url = url
-        this.logo = url + "/logo.png"
+        this.logo = `${url}/logo.png`
         this.manifest = manifest
         this.activationRule = manifest.onHttpRequest?.find(r => r.actions.find(a => a.activate))!
         this.activationAction = this.activationRule?.actions.find(a => a.activate)!.activate!
@@ -31,7 +32,7 @@ export class Agent {
         if (authService) { 
             await authService.login()
         }
-        return await this.postJson(this.url + "/sessions", { locales: locales }, authService)
+        return await this.postJson(`${this.url}/sessions`, { locales: locales }, authService)
     }
 
     private async postJson(url: string, body: any, authService?: AuthService): Promise<any> {
@@ -69,13 +70,18 @@ export class Agent {
             .flatMap(r => r.actions) : []
     }
 
+    public async transcriptAudio(audioFileBase64: string, sessionId: string, authService?: AuthService) {
+        let transcribedAudio = await this.postJson(`${this.url}/sessions/${sessionId}/transcriptions`, { file: audioFileBase64 }, authService)
+        return transcribedAudio
+    }
+
     public async solveInteractionSummary(detail: any, sessionId: string, authService?: AuthService): Promise<string> {
-        let interaction = await this.postJson(this.url + "/sessions/" + sessionId + "/interactions", detail, authService)
+        let interaction = await this.postJson(`${this.url}/sessions/${sessionId}/interactions`, detail, authService)
         return interaction.summary
     }
 
     public async * ask(msg: string, sessionId: string, authService?: AuthService): AsyncIterable<string> {
-        let ret = await fetchStreamJson(this.url + "/sessions/" + sessionId + "/questions", await this.buildHttpPost({ question: msg }, authService))
+        let ret = await fetchStreamJson(`${this.url}/sessions/${sessionId}/questions`, await this.buildHttpPost({ question: msg }, authService))
         if (ret.next) {
             for await (const part of ret) {
                 yield part

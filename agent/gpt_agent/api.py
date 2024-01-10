@@ -1,17 +1,17 @@
 import os
 import traceback
 from typing import AsyncIterator, Annotated
-
 import dotenv
 from fastapi import Depends, FastAPI, HTTPException, status, Request
 from fastapi.responses import FileResponse, StreamingResponse, Response
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
+from typing import Optional
 from sse_starlette.sse import ServerSentEvent
 
 from gpt_agent.agent import Agent
-from gpt_agent.domain import Session, Question, SessionBase
-from gpt_agent.file_system_repos import SessionsRepository, QuestionsRepository
+from gpt_agent.domain import Session, Question, TranscriptionQuestion, SessionBase
+from gpt_agent.file_system_repos import SessionsRepository, QuestionsRepository, TranscriptionsRepository, get_session_path
 
 dotenv.load_dotenv()
 
@@ -22,6 +22,7 @@ assets_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'assets'
 templates = Jinja2Templates(directory=assets_path)
 sessions_repo = SessionsRepository()
 questions_repo = QuestionsRepository()
+transcriptions_repo = TranscriptionsRepository()
 
 
 @app.get('/manifest.json')
@@ -48,7 +49,10 @@ async def create_session(req: SessionBase, user: Annotated[str, Depends(get_curr
 
 
 class QuestionRequest(BaseModel):
-    question: str
+    question: Optional[str] = ""
+
+class TranscriptionRequest(BaseModel):
+    file: Optional[str] = ""
 
 
 @app.post('/sessions/{session_id}/questions')
@@ -61,7 +65,14 @@ async def answer_question(
     # If you don't want to use response streaming you can just return a pydantic object like in
     # create session endpoint.
     return StreamingResponse(agent_response_stream(req, session), media_type="text/event-stream")
+    
 
+@app.post('/sessions/{session_id}/transcriptions')
+async def answer_transcription(session_id: str, req: TranscriptionRequest, user: Annotated[str, Depends(get_current_user)]) -> str:
+    session = await _find_session(session_id, user)
+    ret = TranscriptionQuestion(base64=req.file, session=session)
+    audio_file_path = await transcriptions_repo.save_audio(ret)
+    return Agent(session).transcript(audio_file_path)
 
 async def _find_session(session_id: str, user: str) -> Session:
     ret = await sessions_repo.find_session(session_id)
@@ -69,7 +80,6 @@ async def _find_session(session_id: str, user: str) -> Session:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f'session {session_id} not found')
     return ret
-
 
 async def agent_response_stream(req: QuestionRequest, session: Session) -> AsyncIterator[str]:
     try:

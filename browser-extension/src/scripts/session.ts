@@ -33,12 +33,20 @@ export class TabSession {
     }
   }
 
-  public async processUserMessage(msg: string) {
-    let ret: AsyncIterable<string> = await this.agent.ask(msg, this.id, this.authService)
+  public async agentAsk(msg: string) {
+    let ret : AsyncIterable<string> = await this.agent.ask(msg, this.id, this.authService)
     for await (const part of ret) {
       await this.sendMessageToTab(AiMessage.incomplete(part))
     }
     await this.sendMessageToTab(AiMessage.complete())
+  }
+
+  public async processUserMessage(msg: string, file: Record<string, string>) {
+    let messageToProcess = msg;
+    if (file.data) {
+      messageToProcess = await this.agent.transcriptAudio(file.data, this.id);
+    }
+    await this.agentAsk(messageToProcess);
   }
 
   private async sendMessageToTab(message: any): Promise<void> {

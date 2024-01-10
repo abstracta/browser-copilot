@@ -18,7 +18,7 @@ export abstract class BrowserMessage {
       case "activateAgent":
         return new ActivateAgent(obj.agentId)
       case "userMessage":
-        return new UserMessage(obj.text)
+        return new UserMessage(obj.text, obj.file)
       case "aiMessage":
         return new AiMessage(obj.text, obj.isComplete)
       case "activatedAgent":
@@ -70,10 +70,12 @@ export class ActivateAgent extends BrowserMessage {
 export class UserMessage extends BrowserMessage {
 
   text: string
+  file: Record<string, string>
 
-  constructor(msg: string) {
+  constructor(msg: string, file: Record<string, string>) {
     super("userMessage")
     this.text = msg
+    this.file = file
   }
 
 }
