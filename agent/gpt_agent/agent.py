@@ -6,7 +6,7 @@ from typing import List, AsyncIterator
 import openai
 from langchain.agents import Tool, OpenAIFunctionsAgent, AgentExecutor
 from langchain.callbacks import AsyncIteratorCallbackHandler
-from langchain.chat_models import AzureChatOpenAI, ChatOpenAI
+from langchain_community.chat_models import AzureChatOpenAI, ChatOpenAI
 from langchain.memory import ConversationBufferMemory, FileChatMessageHistory
 from langchain.prompts import MessagesPlaceholder
 from langchain.schema import SystemMessage
