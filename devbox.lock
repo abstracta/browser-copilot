@@ -2,78 +2,84 @@
   "lockfile_version": "1",
   "packages": {
     "nodePackages.pnpm@latest": {
-      "last_modified": "2023-11-23T16:10:41Z",
-      "resolved": "github:NixOS/nixpkgs/e8b0430bc4c4235607ae102010dec2ba32e8c0ca#nodePackages.pnpm",
+      "last_modified": "2023-12-13T22:54:10Z",
+      "resolved": "github:NixOS/nixpkgs/fd04bea4cbf76f86f244b9e2549fca066db8ddff#nodePackages.pnpm",
       "source": "devbox-search",
       "version": "8.10.5",
       "systems": {
+        "aarch64-darwin": {
+          "store_path": "/nix/store/mp0ppa9xhaaqs398r5hpvhnbwpc9mpfw-pnpm-8.10.5"
+        },
         "aarch64-linux": {
-          "store_path": "/nix/store/16r331i5imngs5kfzkdnxa28n3ny14j0-pnpm-8.10.5"
+          "store_path": "/nix/store/vjvri6p42iind1dj500jhzh1lai3972r-pnpm-8.10.5"
+        },
+        "x86_64-darwin": {
+          "store_path": "/nix/store/kq84mdjh9ycsvnkj1dmgiz8ks6fyivqk-pnpm-8.10.5"
         },
         "x86_64-linux": {
-          "store_path": "/nix/store/idw48sa6db5dfxz6mnakwbz9k9fjkppm-pnpm-8.10.5"
+          "store_path": "/nix/store/y3mxy318cr8cl26saysfwqbxbcwb31lb-pnpm-8.10.5"
         }
       }
     },
     "nodejs@latest": {
-      "last_modified": "2023-12-01T12:14:05Z",
-      "resolved": "github:NixOS/nixpkgs/77da99a144cd341408308e0a37622f5edcc6c5ba#nodejs_21",
+      "last_modified": "2023-12-25T10:13:25Z",
+      "resolved": "github:NixOS/nixpkgs/e1fa12d4f6c6fe19ccb59cac54b5b3f25e160870#nodejs_21",
       "source": "devbox-search",
-      "version": "21.3.0",
+      "version": "21.5.0",
       "systems": {
         "aarch64-darwin": {
-          "store_path": "/nix/store/14v3za8nwj0pzyslxgk91ivrwli4r5d7-nodejs-21.3.0"
+          "store_path": "/nix/store/v8vw6h0agr1687qp1azgffg4h172w2ap-nodejs-21.5.0"
         },
         "aarch64-linux": {
-          "store_path": "/nix/store/zs16ndz5d90ybi31b0my5q63ym12jmjx-nodejs-21.3.0"
+          "store_path": "/nix/store/wrgj8cbi8j99k1v9g2kddil5dwnjcjzp-nodejs-21.5.0"
         },
         "x86_64-darwin": {
-          "store_path": "/nix/store/s5f7nr4g0mp3x7p2c5lskdwqb8rd8nwh-nodejs-21.3.0"
+          "store_path": "/nix/store/cc7bhvkx351rsfx7wja5wxnqxis4mj9g-nodejs-21.5.0"
         },
         "x86_64-linux": {
-          "store_path": "/nix/store/5gx81a63z7mklr8kmjxybc3ysjn4gmf2-nodejs-21.3.0"
+          "store_path": "/nix/store/jra6nl09vh0grv4s7m3q778havhs1l6i-nodejs-21.5.0"
         }
       }
     },
     "poetry@latest": {
-      "last_modified": "2023-12-09T06:39:50Z",
+      "last_modified": "2023-12-13T22:54:10Z",
       "plugin_version": "0.0.4",
-      "resolved": "github:NixOS/nixpkgs/29558c0722ffd40ff625256e16259168b7c03ed1#poetry",
+      "resolved": "github:NixOS/nixpkgs/fd04bea4cbf76f86f244b9e2549fca066db8ddff#poetry",
       "source": "devbox-search",
       "version": "1.7.1",
       "systems": {
         "aarch64-darwin": {
-          "store_path": "/nix/store/957yy01x2lr7ylv2fr2dwk8wjxpnxxp8-python3.11-poetry-1.7.1"
+          "store_path": "/nix/store/xdp0dyglkkfrny00ij665wg1jgywy0lj-python3.11-poetry-1.7.1"
         },
         "aarch64-linux": {
-          "store_path": "/nix/store/d3gavxnsv37rw2qdz61gnjyv8ag9sk62-python3.11-poetry-1.7.1"
+          "store_path": "/nix/store/0bwwm54qxchxnrn34h6qflx9cvgpmcwc-python3.11-poetry-1.7.1"
         },
         "x86_64-darwin": {
-          "store_path": "/nix/store/8ji3jz47dg7kdr6fla9vy28a5a8ifj6f-python3.11-poetry-1.7.1"
+          "store_path": "/nix/store/vwlkmaxd6cx8w3a7b4lb0iljqwdxbv74-python3.11-poetry-1.7.1"
         },
         "x86_64-linux": {
-          "store_path": "/nix/store/ris3jsq77jdk70gzzjsqsydwfgilbigg-python3.11-poetry-1.7.1"
+          "store_path": "/nix/store/22if7pp1p4l03lgxi3ix5nam7dg4isjm-python3.11-poetry-1.7.1"
         }
       }
     },
     "python3@latest": {
-      "last_modified": "2023-11-19T17:46:56Z",
+      "last_modified": "2023-12-13T22:54:10Z",
       "plugin_version": "0.0.3",
-      "resolved": "github:NixOS/nixpkgs/0bf3f5cf6a98b5d077cdcdb00a6d4b3d92bc78b5#python3",
+      "resolved": "github:NixOS/nixpkgs/fd04bea4cbf76f86f244b9e2549fca066db8ddff#python3",
       "source": "devbox-search",
       "version": "3.11.6",
       "systems": {
         "aarch64-darwin": {
-          "store_path": "/nix/store/ai4hd8f1xhr0rfjdr17bxx1rwi42sx97-python3-3.11.6"
+          "store_path": "/nix/store/z0nnwdh4p692yvf3qgwgj3bn78w99q6y-python3-3.11.6"
         },
         "aarch64-linux": {
-          "store_path": "/nix/store/7ahkv87jj59z90yal5dcrgagz58cqmz6-python3-3.11.6"
+          "store_path": "/nix/store/v4ln57kzvq6c3q2041xmgig8vyh5nm20-python3-3.11.6"
         },
         "x86_64-darwin": {
-          "store_path": "/nix/store/dc4xnyqi2kh25f1c74dfczxw95anbhhr-python3-3.11.6"
+          "store_path": "/nix/store/rfqs6lmm832yp3aqihsjdfvvs0wvr1a5-python3-3.11.6"
         },
         "x86_64-linux": {
-          "store_path": "/nix/store/qp5zys77biz7imbk6yy85q5pdv7qk84j-python3-3.11.6"
+          "store_path": "/nix/store/5k91mg4qjylxbfvrv748smfh51ppjq0g-python3-3.11.6"
         }
       }
     }
