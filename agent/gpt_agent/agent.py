@@ -1,8 +1,9 @@
 import asyncio
 import datetime
+import logging
 import os
 from typing import List, AsyncIterator
-import openai
+
 import requests
 from langchain.agents import Tool, OpenAIFunctionsAgent, AgentExecutor
 from langchain.callbacks import AsyncIteratorCallbackHandler
@@ -14,7 +15,8 @@ from langchain.tools import tool
 
 from gpt_agent.domain import Session
 from gpt_agent.file_system_repos import get_session_path
-openai.log = 'debug'
+
+logging.getLogger("openai").level = logging.DEBUG
 
 # just a sample tool to showcase how you can create your own set of tools
 @tool

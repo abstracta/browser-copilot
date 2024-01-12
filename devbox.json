@@ -17,7 +17,7 @@
         "docker-compose up keycloak"
       ],
       "agent": [
-        "cd agent && poetry run uvicorn gpt_agent.api:app --reload"
+        "cd agent && poetry run python -m gpt_agent 1"
       ],
       "browser": [
         "pnpm --dir browser-extension dev"

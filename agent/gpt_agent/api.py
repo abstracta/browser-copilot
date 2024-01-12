@@ -1,7 +1,8 @@
+import logging
 import os
 import traceback
 from typing import AsyncIterator, Annotated
-import dotenv
+
 from fastapi import Depends, FastAPI, HTTPException, status, Request
 from fastapi.responses import FileResponse, StreamingResponse, Response
 from fastapi.templating import Jinja2Templates
@@ -10,12 +11,13 @@ from typing import Optional
 from sse_starlette.sse import ServerSentEvent
 
 from gpt_agent.agent import Agent
+from gpt_agent.auth import get_current_user
 from gpt_agent.domain import Session, Question, TranscriptionQuestion, SessionBase
 from gpt_agent.file_system_repos import SessionsRepository, QuestionsRepository, TranscriptionsRepository, get_session_path
 
-dotenv.load_dotenv()
-
-from gpt_agent.auth import get_current_user
+logging.basicConfig()
+logger = logging.getLogger("gpt_agent")
+logger.level = logging.DEBUG
 
 app = FastAPI()
 assets_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'assets')
