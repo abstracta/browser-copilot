@@ -6,17 +6,34 @@ export const fetchJson = async (url: string, options?: RequestInit) => {
 const fetchResponse = async (url: string, options?: RequestInit) => {
   let ret = await fetch(url, options)
   if (ret.status < 200 || ret.status >= 300) {
-    let respBody = await ret.text
-    throw Error(`Got unexpected response ${ret.status}:\n${respBody}`)
+    let body = await ret.text()
+    console.warn(`Problem with ${options?.method ? options.method : 'GET'} ${url}`, { status: ret.status, body: body })
+    if (ret.headers.get('Content-Type') === 'application/json') {
+      let json = JSON.parse(body)
+      if ('detail' in json) {
+        throw new HttpServiceError(json.detail)
+      }
+    }
+    throw new HttpServiceError()
   }
   return ret
+}
+
+export class HttpServiceError extends Error {
+  detail?: string
+
+  constructor(detail?: string) {
+    super()
+    this.detail = detail
+  }
+
 }
 
 export async function* fetchStreamJson(url: string, options?: RequestInit): AsyncIterable<string> | any {
   let resp = await fetchResponse(url, options)
   let contentType = resp.headers.get("content-type")
   if (contentType?.startsWith("text/event-stream")) {
-    let ret = await fetchSSEStream(resp)
+    let ret = await fetchSSEStream(resp, url, options)
     for await (const part of ret) {
       yield part
     }
@@ -25,7 +42,7 @@ export async function* fetchStreamJson(url: string, options?: RequestInit): Asyn
   }
 }
 
-async function* fetchSSEStream(resp: Response): AsyncIterable<string> {
+async function* fetchSSEStream(resp: Response, url: string, options?: RequestInit): AsyncIterable<string> {
   let reader = resp.body!.getReader()
   let done = false
   while (!done) {
@@ -34,7 +51,8 @@ async function* fetchSSEStream(resp: Response): AsyncIterable<string> {
     let events = ServerSentEvent.fromBytes(result.value!)
     for (const event of events) {
       if (event.event === "error") {
-        throw Error(event.data)
+        console.warn(`Problem while reading stream response from ${options?.method ? options.method : 'GET'} ${url}`, event)
+        throw new HttpServiceError()
       } else {
         yield event.data
       }

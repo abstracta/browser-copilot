@@ -1,9 +1,11 @@
-import { createApp } from "vue";
-import Index from "./pages/Index.vue";
-import VueTablerIcons from "vue-tabler-icons";
+import { createApp } from "vue"
+import Index from "./pages/Index.vue"
+import VueTablerIcons from "vue-tabler-icons"
 import './assets/style/index.css'
 import { createI18n } from 'vue-i18n'
 import browser from "webextension-polyfill"
+import Toast from "vue-toastification"
+import "vue-toastification/dist/index.css"
 
 const i18n = createI18n({
   legacy: false,
@@ -15,4 +17,5 @@ const i18n = createI18n({
 const app = createApp(Index)
 app.use(VueTablerIcons)
 app.use(i18n)
+app.use(Toast, {})
 app.mount("body")

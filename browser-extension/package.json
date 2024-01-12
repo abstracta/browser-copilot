@@ -15,7 +15,8 @@
     "tailwindcss": "^3.3.6",
     "vue": "^3.3.10",
     "vue-i18n": "^9.8.0",
-    "vue-tabler-icons": "^2.21.0"
+    "vue-tabler-icons": "^2.21.0",
+    "vue-toastification": "^2.0.0-rc.5"
   },
   "devDependencies": {
     "@intlify/unplugin-vue-i18n": "^1.5.0",

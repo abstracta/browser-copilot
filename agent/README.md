@@ -105,6 +105,7 @@ The previous manifest includes the following sections:
       * `header`: the name of the header to add.
       * `value`: the value to send in the header. This value can contain `${sessionId}` to identify the session used by the copilot.
     * More to come :)
+  * `contactEmail`: specifies an email provided to copilot users so they can contact support in case they face any issues with the copilot.
 
 ### Authentication
 

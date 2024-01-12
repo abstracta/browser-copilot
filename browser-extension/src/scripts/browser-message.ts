@@ -9,22 +9,29 @@ export abstract class BrowserMessage {
     switch (obj.type) {
       case "toggleSidebar":
         return new ToggleSidebar()
-      case "resizeSidebar":
-        return new ResizeSidebar(obj.delta)
-      case "closeSidebar":
-        return new CloseSidebar()
       case "displaySidebar":
         return new DisplaySidebar()
+      case "closeSidebar":
+        return new CloseSidebar()
+      case "resizeSidebar":
+        return new ResizeSidebar(obj.delta)
       case "activateAgent":
         return new ActivateAgent(obj.agentId)
       case "agentActivated":
-        return new AgentActivated(obj.agentId, obj.agentName, obj.agentLogo)
+        return new AgentActivated(obj.agentId, obj.agentName, obj.agentLogo, obj.contactEmail)
+      case "agentActivationError":
+        return new AgentActivationError(obj.agentName, obj.contactEmail)
       case "userMessage":
         return new UserMessage(obj.text, obj.file)
       case "agentMessage":
         return new AgentMessage(obj.text, obj.isComplete)
+      case "agentErrorMessage":
+        return new AgentErrorMessage(obj.context, obj.detail)
       default:
-        throw Error("Unknown message type: " + obj.type)
+        // we log and throw since the handling should be the same in all points and error allows to properly interrupt any further processing of the message
+        let msg = `Unknown message type: ${obj.type}`
+        console.error(msg, obj)
+        throw Error(msg)
     }
   }
 }
@@ -35,15 +42,10 @@ export class ToggleSidebar extends BrowserMessage {
   }
 }
 
-export class ResizeSidebar extends BrowserMessage {
-
-  delta: number
-
-  constructor(delta: number) {
-    super("resizeSidebar")
-    this.delta = delta
+export class DisplaySidebar extends BrowserMessage {
+  constructor() {
+    super("displaySidebar")
   }
-
 }
 
 export class CloseSidebar extends BrowserMessage {
@@ -52,9 +54,12 @@ export class CloseSidebar extends BrowserMessage {
   }
 }
 
-export class DisplaySidebar extends BrowserMessage {
-  constructor() {
-    super("displaySidebar")
+export class ResizeSidebar extends BrowserMessage {
+  delta: number
+
+  constructor(delta: number) {
+    super("resizeSidebar")
+    this.delta = delta
   }
 }
 
@@ -67,8 +72,33 @@ export class ActivateAgent extends BrowserMessage {
   }
 }
 
-export class UserMessage extends BrowserMessage {
+export class AgentActivated extends BrowserMessage {
+  agentId: string
+  agentName: string
+  agentLogo: string
+  contactEmail: string
 
+  constructor(agentId: string, agentName: string, agentLogo: string, contactEmail: string) {
+    super("agentActivated")
+    this.agentId = agentId
+    this.agentName = agentName
+    this.agentLogo = agentLogo
+    this.contactEmail = contactEmail
+  }
+}
+
+export class AgentActivationError extends BrowserMessage {
+  agentName: string
+  contactEmail: string
+
+  constructor(agentName: string, contactEmail: string) {
+    super("agentActivationError")
+    this.agentName = agentName
+    this.contactEmail = contactEmail
+  }
+}
+
+export class UserMessage extends BrowserMessage {
   text: string
   file: Record<string, string>
 
@@ -76,20 +106,6 @@ export class UserMessage extends BrowserMessage {
     super("userMessage")
     this.text = msg
     this.file = file
-  }
-
-}
-
-export class AgentActivated extends BrowserMessage {
-  agentId: string
-  agentName: string
-  agentLogo: string
-
-  constructor(agentId: string, agentName: string, agentLogo: string) {
-    super("agentActivated")
-    this.agentId = agentId
-    this.agentName = agentName
-    this.agentLogo = agentLogo
   }
 }
 
@@ -110,5 +126,15 @@ export class AgentMessage extends BrowserMessage {
   public static complete(msg = ""): AgentMessage {
     return new AgentMessage(msg, true)
   }
+}
 
+export class AgentErrorMessage extends BrowserMessage {
+  context: string
+  detail?: string
+
+  constructor(context: string, detail?: string) {
+    super("agentErrorMessage")
+    this.context = context
+    this.detail = detail
+  }
 }

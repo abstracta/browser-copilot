@@ -1,10 +1,14 @@
 <script lang="ts" setup>
 import { ref, onBeforeMount, nextTick } from 'vue'
 import browser from "webextension-polyfill"
-import { BrowserMessage, DisplaySidebar, CloseSidebar, ActivateAgent, AgentActivated, AgentMessage, UserMessage } from "../scripts/browser-message"
+import { useToast } from "vue-toastification"
+import { useI18n } from 'vue-i18n'
+import {
+  BrowserMessage, DisplaySidebar, CloseSidebar, ActivateAgent, AgentActivated,
+  AgentActivationError, UserMessage, AgentMessage, AgentErrorMessage
+} from "../scripts/browser-message"
 import CopilotChat, { ChatMessage } from "../components/CopilotChat.vue"
 import CopilotList from "../components/CopilotList.vue"
-
 
 const sidebar = ref<HTMLDivElement>()
 const agentId = ref<string>("")
@@ -12,14 +16,21 @@ const agentLogo = ref<string>("")
 const agentName = ref<string>("")
 const lastResizePos = ref<number>()
 const messages = ref<ChatMessage[]>([])
+const toast = useToast()
+const { t } = useI18n()
+let contactEmail: string
 
 onBeforeMount(() => {
   browser.runtime.onMessage.addListener(async (m: any) => {
     let msg = BrowserMessage.fromJsonObject(m)
     if (msg instanceof AgentActivated) {
       await onAgentActivated(msg)
+    } else if (msg instanceof AgentActivationError) {
+      await onAgentActivationError(msg)
     } else if (msg instanceof AgentMessage) {
       onAgentMessage(msg)
+    } else if (msg instanceof AgentErrorMessage) {
+      onAgentErrorMessage(msg)
     }
   })
 })
@@ -28,6 +39,7 @@ const onAgentActivated = async (msg: AgentActivated) => {
   agentId.value = msg.agentId
   agentName.value = msg.agentName
   agentLogo.value = msg.agentLogo
+  contactEmail = msg.contactEmail
   messages.value.push(ChatMessage.agentMessage())
   if (sidebar.value?.clientWidth == 0) {
     await nextTick(async () => {
@@ -40,6 +52,10 @@ const sendToServiceWorker = async (msg: BrowserMessage) => {
   await browser.runtime.sendMessage(msg)
 }
 
+const onAgentActivationError = async (msg: AgentActivationError) => {
+  toast.error(t('activationError', { ...msg }))
+}
+
 const onAgentMessage = (msg: AgentMessage) => {
   let lastMessage = messages.value[messages.value.length - 1]
   if (!lastMessage.isComplete) {
@@ -47,6 +63,22 @@ const onAgentMessage = (msg: AgentMessage) => {
     lastMessage.text += msg.text
   } else {
     messages.value.push(ChatMessage.agentMessage(msg.text))
+  }
+}
+
+const onAgentErrorMessage = (msg: AgentErrorMessage) => {
+  let lastMessage = messages.value[messages.value.length - 1]
+  let text = msg.detail ? msg.detail : t(msg.context + "Error", { contactEmail: contactEmail })
+  if (msg.context === "recordInteraction") {
+    let messagePosition = lastMessage.isComplete ? messages.value.length : messages.value.length - 1
+    messages.value.splice(messagePosition, 0, ChatMessage.agentMessage(text))
+  } else {
+    lastMessage.isComplete = true
+    if (!lastMessage.text) {
+      lastMessage.text += text
+    } else {
+      messages.value.push(ChatMessage.agentMessage(text))
+    }
   }
 }
 
@@ -113,3 +145,18 @@ const onUserMessage = async (msg: string, file: Record<string, string>) => {
   background-color: var(--accent-color);
 }
 </style>
+
+<i18n>
+{
+  "en": {
+    "activationError": "Cound not activate {agentName} Copilot. You can try again and if the issue persists then contact {contactEmail}.",
+    "recordInteractionError": "I could not process some information from the current site. This might impact the information and answers I provide. If the issue persists please contact {contactEmail}",
+    "answerUserError": "I am currently unable to complete your request. You can try again and if the issue persists contact {contactEmail}"
+  },
+  "es": {
+    "activationError": "No se pudo activar el Copiloto {agentName}. Puedes intentar de nuevo y si el problema persiste contactar a {contactEmail}.",
+    "recordInteractionError": "No pude procesar informacion generada por la página actual. Esto puede impactar en la información y respuestas que te puedo dar. Si el problema persiste por favor contacta a {contactEmail}",
+    "answerUserError": "Ahora no puedo completar tu pedido. Puedes intentar de nuevo y si el problema persiste contactar a {contactEmail}"
+  }
+}
+</i18n>

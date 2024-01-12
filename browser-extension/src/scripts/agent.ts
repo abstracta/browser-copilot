@@ -13,6 +13,8 @@ export class Agent {
 
     public static async fromUrl(url: string): Promise<Agent> {
         url = url.endsWith("/") ? url.slice(0, -1) : url
+        let manifestPath = "/manifest.json"
+        url = url.endsWith(manifestPath) ? url.slice(0, -manifestPath.length) : url
         return new Agent(url, await fetchJson(`${url}/manifest.json`))
     }
 
@@ -29,7 +31,7 @@ export class Agent {
     }
 
     public async createSession(locales: string[], authService?: AuthService): Promise<AgentSession> {
-        if (authService) { 
+        if (authService) {
             await authService.login()
         }
         return await this.postJson(`${this.url}/sessions`, { locales: locales }, authService)
@@ -40,7 +42,7 @@ export class Agent {
     }
 
     private async buildHttpPost(body: any, authService?: AuthService): Promise<RequestInit> {
-        let headers = {"Content-Type": "application/json"} as any
+        let headers = { "Content-Type": "application/json" } as any
         if (authService) {
             let user = await authService.getUser()
             headers['Authorization'] = "Bearer " + user!.access_token
@@ -101,6 +103,7 @@ export interface AgentManifest {
     onSessionClose?: EndAction
     onHttpRequest?: AgentRule[]
     auth?: AuthConfig
+    contactEmail: string
 }
 
 export interface AgentRule {

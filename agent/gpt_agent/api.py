@@ -1,13 +1,12 @@
 import logging
 import os
 import traceback
-from typing import AsyncIterator, Annotated
+from typing import AsyncIterator, Annotated, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, status, Request
 from fastapi.responses import FileResponse, StreamingResponse, Response
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
-from typing import Optional
 from sse_starlette.sse import ServerSentEvent
 
 from gpt_agent.agent import Agent
@@ -33,7 +32,8 @@ async def get_manifest(request: Request) -> Response:
         "request": request,
         "openid_url": os.getenv("MANIFEST_OPENID_URL", os.getenv("OPENID_URL")),
         "openid_client_id": os.getenv("OPENID_CLIENT_ID"),
-        "openid_scope": os.getenv("OPENID_SCOPE")
+        "openid_scope": os.getenv("OPENID_SCOPE"),
+        "contact_email": os.getenv("CONTACT_EMAIL")
     }, media_type='application/json')
 
 
@@ -94,4 +94,4 @@ async def agent_response_stream(req: QuestionRequest, session: Session) -> Async
         await questions_repo.save_question(ret)
     except Exception as e:
         traceback.print_exception(e)
-        yield ServerSentEvent(event="error", data=e).encode()
+        yield ServerSentEvent(event="error").encode()

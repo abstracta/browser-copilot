@@ -5,7 +5,7 @@ import { findSessionByTabId, saveSession, removeSession } from "./scripts/sessio
 import { saveAgentPrompts } from "./scripts/prompt-repository"
 import { TabSession } from "./scripts/session"
 import { AuthService } from "./scripts/auth"
-import { BrowserMessage, ActivateAgent, CloseSidebar, DisplaySidebar, ToggleSidebar, UserMessage } from "./scripts/browser-message"
+import { BrowserMessage, DisplaySidebar, CloseSidebar, ToggleSidebar, ActivateAgent, AgentActivationError, UserMessage } from "./scripts/browser-message"
 
 const createToggleContextMenu = () => {
   browser.contextMenus.create({
@@ -19,12 +19,16 @@ const activateAgent = async (agent: Agent, tabId: number, url: string) => {
   if (await findSessionByTabId(tabId)) {
     return
   }
-  let authService = agent.manifest.auth ? new AuthService(agent.manifest.auth) : undefined
-  let resp = await agent.createSession(await browser.i18n.getAcceptLanguages(), authService)
-  let session = new TabSession(resp.id, tabId, agent, url, authService)
-  await saveSession(session)
-  await updateRequestRules(session)
-  await session.activate(url)
+  try {
+    let authService = agent.manifest.auth ? new AuthService(agent.manifest.auth) : undefined
+    let resp = await agent.createSession(await browser.i18n.getAcceptLanguages(), authService)
+    let session = new TabSession(resp.id, tabId, agent, url, authService)
+    await saveSession(session)
+    await session.activate(url)
+    await updateRequestRules(session)
+  } catch (e) {
+    browser.tabs.sendMessage(tabId, new AgentActivationError(agent.manifest.name, agent.manifest.contactEmail))
+  }
 }
 
 const updateRequestRules = async (session: TabSession) => {
@@ -83,9 +87,13 @@ const toggleSidebar = (tabId: number) => {
 browser.runtime.onInstalled.addListener(async () => {
   createToggleContextMenu()
   if (import.meta.env.DEV) {
-    let agent = await Agent.fromUrl("http://localhost:8000")
-    await addAgent(agent)
-    await saveAgentPrompts(agent.manifest.prompts, agent.manifest.id)
+    try {
+      let agent = await Agent.fromUrl("http://localhost:8000")
+      await addAgent(agent)
+      await saveAgentPrompts(agent.manifest.prompts, agent.manifest.id)
+    } catch (e) {
+      console.error("Problem adding dev agent", e)
+    }
   }
 })
 
@@ -135,7 +143,12 @@ browser.tabs.onRemoved.addListener(async (tabId) => {
   browser.declarativeNetRequest.updateSessionRules({ removeRuleIds: prevRuleIds })
   let session = await findSessionByTabId(tabId)
   if (session) {
-    session.close()
     await removeSession(session)
+    try {
+      session.close()
+    } catch (e) {
+      // here we can't provide a toast as we do in activation since tab is closed and there is no content where toast can be shown
+      console.error(`Problem closing session. Please contact support at ${session.agent.manifest.contactEmail} with the details.`, e)
+    }
   }
 })
