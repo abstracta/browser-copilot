@@ -17,12 +17,12 @@ export abstract class BrowserMessage {
         return new DisplaySidebar()
       case "activateAgent":
         return new ActivateAgent(obj.agentId)
+      case "agentActivated":
+        return new AgentActivated(obj.agentId, obj.agentName, obj.agentLogo)
       case "userMessage":
         return new UserMessage(obj.text, obj.file)
-      case "aiMessage":
-        return new AiMessage(obj.text, obj.isComplete)
-      case "activatedAgent":
-        return new ActivatedAgent(obj.agentId, obj.agentName, obj.agentLogo)
+      case "agentMessage":
+        return new AgentMessage(obj.text, obj.isComplete)
       default:
         throw Error("Unknown message type: " + obj.type)
     }
@@ -80,35 +80,35 @@ export class UserMessage extends BrowserMessage {
 
 }
 
-export class ActivatedAgent extends BrowserMessage {
+export class AgentActivated extends BrowserMessage {
   agentId: string
   agentName: string
   agentLogo: string
 
   constructor(agentId: string, agentName: string, agentLogo: string) {
-    super("activatedAgent")
+    super("agentActivated")
     this.agentId = agentId
     this.agentName = agentName
     this.agentLogo = agentLogo
   }
 }
 
-export class AiMessage extends BrowserMessage {
+export class AgentMessage extends BrowserMessage {
   text: string
   isComplete: boolean
 
   constructor(msg: string, isComplete: boolean) {
-    super("aiMessage")
+    super("agentMessage")
     this.text = msg
     this.isComplete = isComplete
   }
 
-  public static incomplete(msg: string): AiMessage {
-    return new AiMessage(msg, false)
+  public static incomplete(msg: string): AgentMessage {
+    return new AgentMessage(msg, false)
   }
 
-  public static complete(msg = ""): AiMessage {
-    return new AiMessage(msg, true)
+  public static complete(msg = ""): AgentMessage {
+    return new AgentMessage(msg, true)
   }
 
 }

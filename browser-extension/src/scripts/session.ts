@@ -2,7 +2,7 @@ import { Agent, RecordInteractionRuleAction } from "./agent"
 import { fetchJson } from "./http"
 import { AuthService } from "./auth"
 import browser from "webextension-polyfill"
-import { ActivatedAgent, AiMessage } from "./browser-message"
+import { AgentActivated, AgentMessage } from "./browser-message"
 
 export class TabSession {
   id: string
@@ -25,8 +25,8 @@ export class TabSession {
   }
 
   public async activate(url: string): Promise<void> {
-    await this.sendMessageToTab(new ActivatedAgent(this.agent.manifest.id, this.agent.manifest.name, this.agent.logo))
-    await this.sendMessageToTab(AiMessage.complete(this.agent.manifest.welcomeMessage))
+    await this.sendMessageToTab(new AgentActivated(this.agent.manifest.id, this.agent.manifest.name, this.agent.logo))
+    await this.sendMessageToTab(AgentMessage.complete(this.agent.manifest.welcomeMessage))
     let httpAction = this.agent.activationAction?.httpRequest
     if (httpAction) {
       await fetchJson(this.solveUrlTemplate(httpAction.url, url), { method: httpAction.method })
@@ -34,15 +34,14 @@ export class TabSession {
   }
 
   public async processUserMessage(msg: string, file: Record<string, string>) {
-    let messageToProcess = msg;
     if (file.data) {
-      messageToProcess = await this.agent.transcriptAudio(file.data, this.id);
+      msg = await this.agent.transcriptAudio(file.data, this.id);
     }
-    let ret : AsyncIterable<string> = await this.agent.ask(msg, this.id, this.authService)
+    let ret: AsyncIterable<string> = await this.agent.ask(msg, this.id, this.authService)
     for await (const part of ret) {
-      await this.sendMessageToTab(AiMessage.incomplete(part))
+      await this.sendMessageToTab(AgentMessage.incomplete(part))
     }
-    await this.sendMessageToTab(AiMessage.complete())
+    await this.sendMessageToTab(AgentMessage.complete())
   }
 
   private async sendMessageToTab(message: any): Promise<void> {
@@ -69,7 +68,7 @@ export class TabSession {
     let interactionDetail = await this.findInteraction(req, action)
     let summary = await this.agent.solveInteractionSummary(interactionDetail, this.id, this.authService)
     if (summary) {
-      this.sendMessageToTab(AiMessage.complete(summary))
+      this.sendMessageToTab(AgentMessage.complete(summary))
     }
   }
 

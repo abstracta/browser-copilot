@@ -20,7 +20,7 @@ const validation = ref(ValidationResult.valid())
 const save = async () => {
   try {
     let agent = await Agent.fromUrl(url.value)
-    addAgent(agent)
+    await addAgent(agent)
     await saveAgentPrompts(agent.manifest.prompts, agent.manifest.id)
     emit('saved', agent)
   } catch (e: any) {

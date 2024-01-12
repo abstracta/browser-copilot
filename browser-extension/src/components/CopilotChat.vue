@@ -20,7 +20,7 @@ export class ChatMessage {
     return new ChatMessage(text, file, true, true)
   }
 
-  public static aiMessage(text?: string): ChatMessage {
+  public static agentMessage(text?: string): ChatMessage {
     return new ChatMessage(text || '', {}, false, text !== undefined)
   }
 }
@@ -63,27 +63,29 @@ const lastMessage = computed((): ChatMessage => props.messages[props.messages.le
 
 <template>
   <PageOverlay>
-      <template v-slot:headerContent>
-        <img :src="agentLogo" class="w-[25px] h-[25px]" />
-        <div class="text-[20px] font-semibold">
-          <CopilotName :agentName="agentName" />
-        </div>
-      </template>
-      <template v-slot:headerActions>
-        <button @click="showConfig = true"><settings-icon /></button>
-        <BtnClose @click="$emit('close')"/>
-      </template>
+    <template v-slot:headerContent>
+      <img :src="agentLogo" class="w-[25px] h-[25px]" />
+      <div class="text-[20px] font-semibold">
+        <CopilotName :agentName="agentName" />
+      </div>
+    </template>
+    <template v-slot:headerActions>
+      <button @click="showConfig = true"><settings-icon /></button>
+      <BtnClose @click="$emit('close')" />
+    </template>
     <template v-slot:content>
       <div class="h-full flex flex-col">
         <div class="h-full flex flex-col overflow-y-auto mb-4 rounded-[var(--spacing)]" ref="messagesDiv">
-          <Message v-for="message in messages" :key="message.id" :text="message.text" :file="message.file" :is-user="message.isUser" 
-            :is-complete="message.isComplete" :agent-logo="agentLogo" :agent-name="agentName" :agent-id="agentId" />
+          <Message v-for="message in messages" :key="message.id" :text="message.text" :file="message.file"
+            :is-user="message.isUser" :is-complete="message.isComplete" :agent-logo="agentLogo" :agent-name="agentName"
+            :agent-id="agentId" />
         </div>
         <ChatInput @send-message="onUserMessage" :can-send-message="lastMessage.isComplete" :agent-id="agentId" />
       </div>
     </template>
     <template v-slot:modalsContainer>
-      <CopilotConfig :show="showConfig" @close="showConfig = false" :agent-id="agentId" :agent-name="agentName" :agent-logo="agentLogo" />
+      <CopilotConfig :show="showConfig" @close="showConfig = false" :agent-id="agentId" :agent-name="agentName"
+        :agent-logo="agentLogo" />
     </template>
   </PageOverlay>
 </template>

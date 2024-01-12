@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref, onBeforeMount, nextTick } from 'vue'
 import browser from "webextension-polyfill"
-import { BrowserMessage, DisplaySidebar, ActivatedAgent, AiMessage, UserMessage, ActivateAgent, CloseSidebar } from "../scripts/browser-message"
+import { BrowserMessage, DisplaySidebar, CloseSidebar, ActivateAgent, AgentActivated, AgentMessage, UserMessage } from "../scripts/browser-message"
 import CopilotChat, { ChatMessage } from "../components/CopilotChat.vue"
 import CopilotList from "../components/CopilotList.vue"
 
@@ -16,40 +16,38 @@ const messages = ref<ChatMessage[]>([])
 onBeforeMount(() => {
   browser.runtime.onMessage.addListener(async (m: any) => {
     let msg = BrowserMessage.fromJsonObject(m)
-    if (msg instanceof ActivatedAgent) {
-      agentId.value = msg.agentId
-      agentName.value = msg.agentName
-      agentLogo.value = msg.agentLogo
-      messages.value.push(ChatMessage.aiMessage())
-      if (sidebar.value?.clientWidth == 0) {
-        await nextTick(async () => {
-          await sendToServiceWorker(new DisplaySidebar())
-        })
-      }
-    } else if (msg instanceof AiMessage) {
-      let lastMessage = messages.value[messages.value.length - 1]
-      if (!lastMessage.isComplete) {
-        lastMessage.isComplete = msg.isComplete
-        lastMessage.text += msg.text
-      } else {
-        messages.value.push(ChatMessage.aiMessage(msg.text))
-      }
+    if (msg instanceof AgentActivated) {
+      await onAgentActivated(msg)
+    } else if (msg instanceof AgentMessage) {
+      onAgentMessage(msg)
     }
   })
 })
+
+const onAgentActivated = async (msg: AgentActivated) => {
+  agentId.value = msg.agentId
+  agentName.value = msg.agentName
+  agentLogo.value = msg.agentLogo
+  messages.value.push(ChatMessage.agentMessage())
+  if (sidebar.value?.clientWidth == 0) {
+    await nextTick(async () => {
+      await sendToServiceWorker(new DisplaySidebar())
+    })
+  }
+}
 
 const sendToServiceWorker = async (msg: BrowserMessage) => {
   await browser.runtime.sendMessage(msg)
 }
 
-const onUserMessage = async (msg: string, file: Record<string, string>) => {
-  messages.value.push(ChatMessage.userMessage(msg, file))
-  messages.value.push(ChatMessage.aiMessage())
-  await sendToServiceWorker(new UserMessage(msg, file))
-}
-
-const onActivateAgent = async (agentId: string) => {
-  await sendToServiceWorker(new ActivateAgent(agentId))
+const onAgentMessage = (msg: AgentMessage) => {
+  let lastMessage = messages.value[messages.value.length - 1]
+  if (!lastMessage.isComplete) {
+    lastMessage.isComplete = msg.isComplete
+    lastMessage.text += msg.text
+  } else {
+    messages.value.push(ChatMessage.agentMessage(msg.text))
+  }
 }
 
 const startResize = (e: MouseEvent) => {
@@ -76,10 +74,22 @@ const endResize = () => {
 const closeSidebar = () => {
   sendToServiceWorker(new CloseSidebar())
 }
+
+const onActivateAgent = async (agentId: string) => {
+  await sendToServiceWorker(new ActivateAgent(agentId))
+}
+
+const onUserMessage = async (msg: string, file: Record<string, string>) => {
+  messages.value.push(ChatMessage.userMessage(msg, file))
+  messages.value.push(ChatMessage.agentMessage())
+  await sendToServiceWorker(new UserMessage(msg, file))
+}
 </script>
 
 <template>
-  <div class="fixed flex flex-col left-[-10px] w-full h-[var(--sidebar-height)] justify-left m-[var(--spacing)] border-[.1px] border-slate-500 bg-[var(--background-color)] rounded-tl-[var(--top-round-corner)] rounded-bl-[var(--bottom-round-corner)]" id="sidebar" ref="sidebar">
+  <div
+    class="fixed flex flex-col left-[-10px] w-full h-[var(--sidebar-height)] justify-left m-[var(--spacing)] border-[.1px] border-slate-500 bg-[var(--background-color)] rounded-tl-[var(--top-round-corner)] rounded-bl-[var(--bottom-round-corner)]"
+    id="sidebar" ref="sidebar">
     <div class="absolute left-0 z-[1000] cursor-ew-resize w-[var(--spacing)] h-full" @mousedown="startResize" />
     <CopilotChat v-if="agentId" :messages="messages" :agent-id="agentId" :agent-name="agentName" :agent-logo="agentLogo"
       @userMessage="onUserMessage" @close="closeSidebar" />
@@ -88,7 +98,6 @@ const closeSidebar = () => {
 </template>
 
 <style scoped>
-
 #sidebar ::-webkit-scrollbar {
   width: 7px;
   background-color: #ccc;

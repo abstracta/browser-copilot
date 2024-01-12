@@ -38,7 +38,9 @@ const renderedMsg = computed(() => props.isUser ? props.text.replaceAll("\n", "<
     <div class="mt-[10px] ml-[30px]">
       <div class="flex flex-col font-light text-[15px] leading-tight gap-[15px]" id="rendered-msg">
         <template v-if="file.data">
-          <audio controls><source :src="file.url" type="audio/webm"></audio>
+          <audio controls>
+            <source :src="file.url" type="audio/webm">
+          </audio>
         </template>
         <template v-if="text">
           <div v-html="renderedMsg" />
@@ -62,13 +64,12 @@ pre {
 
 // Fix: Inadequate gap between code blocks within list items.
 #rendered-msg li pre {
-   margin-bottom: 10px;   
+  margin-bottom: 10px;
 }
 
 pre code.hljs {
   padding: 0px;
 }
-
 </style>
 
 <i18n>

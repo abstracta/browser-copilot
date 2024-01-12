@@ -13,7 +13,7 @@ from sse_starlette.sse import ServerSentEvent
 from gpt_agent.agent import Agent
 from gpt_agent.auth import get_current_user
 from gpt_agent.domain import Session, Question, TranscriptionQuestion, SessionBase
-from gpt_agent.file_system_repos import SessionsRepository, QuestionsRepository, TranscriptionsRepository, get_session_path
+from gpt_agent.file_system_repos import SessionsRepository, QuestionsRepository, TranscriptionsRepository
 
 logging.basicConfig()
 logger = logging.getLogger("gpt_agent")
