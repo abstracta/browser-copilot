@@ -6,6 +6,7 @@ import TextArea from './TextArea.vue'
 
 const props = defineProps<{
   canSendMessage: boolean,
+  supportRecording: boolean,
   agentId: string
 }>()
 const emit = defineEmits<{
@@ -34,7 +35,7 @@ const sendMessage = () => {
 }
 
 const canRecord = () => {
-  return navigator.mediaDevices && navigator.mediaDevices.getUserMedia
+  return props.supportRecording && navigator.mediaDevices && navigator.mediaDevices.getUserMedia
 }
 
 const startRecording = async () => {

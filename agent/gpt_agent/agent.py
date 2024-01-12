@@ -66,19 +66,17 @@ class Agent:
     def transcript(self, audio_file_path: str) -> str:
         try:
             headers = {
-                    "api-key": os.getenv('OPENAI_WHISPER_API_KEY')
+                    "api-key": os.getenv('OPENAI_WHISPER_API_KEY', os.getenv('OPENAI_API_KEY'))
             }
-
             files = {'file': open(audio_file_path, 'rb')}
-            url = os.getenv("OPENAI_WHISPER_API_BASE") + '?api-version=' + os.getenv("OPENAI_WHISPER_API_VERSION")
+            api_version = os.getenv("OPENAI_WHISPER_API_VERSION", "https://api.openai.com/v1/audio/transcriptions")
+            url = os.getenv("OPENAI_WHISPER_API_BASE", os.getenv("OPENAI_API_BASE")) + ('?api-version=' + api_version if api_version else '')
             response = requests.post(url, headers=headers, files=files)
             if response.status_code != 200:
                 raise Exception(f"{response.status_code}: {response.text}")
             return response.json()["text"]
-        
         except Exception as e:
             raise Exception(f'Error while transcribing audio file {audio_file_path}', e)
-
 
     async def ask(self, question: str) -> AsyncIterator[str]:
         callback = AsyncIteratorCallbackHandler()

@@ -35,7 +35,7 @@ import CopilotConfig from "../components/CopilotConfig.vue"
 import PageOverlay from "./PageOverlay.vue"
 import BtnClose from './BtnClose.vue'
 
-const props = defineProps<{ agentId: string, agentName: string, agentLogo: string, messages: ChatMessage[] }>()
+const props = defineProps<{ agentId: string, agentName: string, agentLogo: string, agentCapabilities: string[], messages: ChatMessage[] }>()
 const emit = defineEmits<{
   (e: 'close'): void,
   (e: 'userMessage', text: string, file: Record<string, string>): void
@@ -80,12 +80,13 @@ const lastMessage = computed((): ChatMessage => props.messages[props.messages.le
             :is-user="message.isUser" :is-complete="message.isComplete" :agent-logo="agentLogo" :agent-name="agentName"
             :agent-id="agentId" />
         </div>
-        <ChatInput @send-message="onUserMessage" :can-send-message="lastMessage.isComplete" :agent-id="agentId" />
+        <ChatInput :can-send-message="lastMessage.isComplete" :agent-id="agentId"
+          :support-recording="agentCapabilities.includes('transcripts')" @send-message="onUserMessage" />
       </div>
     </template>
     <template v-slot:modalsContainer>
-      <CopilotConfig :show="showConfig" @close="showConfig = false" :agent-id="agentId" :agent-name="agentName"
-        :agent-logo="agentLogo" />
+      <CopilotConfig :show="showConfig" :agent-id="agentId" :agent-name="agentName" :agent-logo="agentLogo"
+        @close="showConfig = false" />
     </template>
   </PageOverlay>
 </template>

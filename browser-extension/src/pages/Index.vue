@@ -14,11 +14,12 @@ const sidebar = ref<HTMLDivElement>()
 const agentId = ref<string>("")
 const agentLogo = ref<string>("")
 const agentName = ref<string>("")
+let agentContactEmail: string
+const agentCapabilities = ref<string[]>([])
 const lastResizePos = ref<number>()
 const messages = ref<ChatMessage[]>([])
 const toast = useToast()
 const { t } = useI18n()
-let contactEmail: string
 
 onBeforeMount(() => {
   browser.runtime.onMessage.addListener(async (m: any) => {
@@ -36,10 +37,11 @@ onBeforeMount(() => {
 })
 
 const onAgentActivated = async (msg: AgentActivated) => {
-  agentId.value = msg.agentId
-  agentName.value = msg.agentName
-  agentLogo.value = msg.agentLogo
-  contactEmail = msg.contactEmail
+  agentId.value = msg.manifest.id
+  agentName.value = msg.manifest.name
+  agentLogo.value = msg.logo
+  agentContactEmail = msg.manifest.contactEmail
+  agentCapabilities.value = msg.manifest.capabilities || []
   messages.value.push(ChatMessage.agentMessage())
   if (sidebar.value?.clientWidth == 0) {
     await nextTick(async () => {
@@ -68,7 +70,7 @@ const onAgentMessage = (msg: AgentMessage) => {
 
 const onAgentErrorMessage = (msg: AgentErrorMessage) => {
   let lastMessage = messages.value[messages.value.length - 1]
-  let text = msg.detail ? msg.detail : t(msg.context + "Error", { contactEmail: contactEmail })
+  let text = msg.detail ? msg.detail : t(msg.context + "Error", { contactEmail: agentContactEmail })
   if (msg.context === "recordInteraction") {
     let messagePosition = lastMessage.isComplete ? messages.value.length : messages.value.length - 1
     messages.value.splice(messagePosition, 0, ChatMessage.agentMessage(text))
@@ -124,7 +126,7 @@ const onUserMessage = async (msg: string, file: Record<string, string>) => {
     id="sidebar" ref="sidebar">
     <div class="absolute left-0 z-[1000] cursor-ew-resize w-[var(--spacing)] h-full" @mousedown="startResize" />
     <CopilotChat v-if="agentId" :messages="messages" :agent-id="agentId" :agent-name="agentName" :agent-logo="agentLogo"
-      @userMessage="onUserMessage" @close="closeSidebar" />
+      :agent-capabilities="agentCapabilities" @userMessage="onUserMessage" @close="closeSidebar" />
     <CopilotList v-if="!agentId" @activateAgent="onActivateAgent" @close="closeSidebar" />
   </div>
 </template>

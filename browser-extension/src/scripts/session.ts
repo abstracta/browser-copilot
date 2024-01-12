@@ -29,7 +29,7 @@ export class TabSession {
     if (httpAction) {
       await fetchJson(this.solveUrlTemplate(httpAction.url, url), { method: httpAction.method })
     }
-    await this.sendMessageToTab(new AgentActivated(this.agent.manifest.id, this.agent.manifest.name, this.agent.logo, this.agent.manifest.contactEmail))
+    await this.sendMessageToTab(new AgentActivated(this.agent.manifest, this.agent.logo))
     await this.sendMessageToTab(AgentMessage.complete(this.agent.manifest.welcomeMessage))
   }
 

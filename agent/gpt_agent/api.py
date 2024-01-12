@@ -53,9 +53,6 @@ async def create_session(req: SessionBase, user: Annotated[str, Depends(get_curr
 class QuestionRequest(BaseModel):
     question: Optional[str] = ""
 
-class TranscriptionRequest(BaseModel):
-    file: Optional[str] = ""
-
 
 @app.post('/sessions/{session_id}/questions')
 async def answer_question(
@@ -67,14 +64,7 @@ async def answer_question(
     # If you don't want to use response streaming you can just return a pydantic object like in
     # create session endpoint.
     return StreamingResponse(agent_response_stream(req, session), media_type="text/event-stream")
-    
 
-@app.post('/sessions/{session_id}/transcriptions')
-async def answer_transcription(session_id: str, req: TranscriptionRequest, user: Annotated[str, Depends(get_current_user)]) -> str:
-    session = await _find_session(session_id, user)
-    ret = TranscriptionQuestion(base64=req.file, session=session)
-    audio_file_path = await transcriptions_repo.save_audio(ret)
-    return Agent(session).transcript(audio_file_path)
 
 async def _find_session(session_id: str, user: str) -> Session:
     ret = await sessions_repo.find_session(session_id)
@@ -82,6 +72,7 @@ async def _find_session(session_id: str, user: str) -> Session:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f'session {session_id} not found')
     return ret
+
 
 async def agent_response_stream(req: QuestionRequest, session: Session) -> AsyncIterator[str]:
     try:
@@ -95,3 +86,20 @@ async def agent_response_stream(req: QuestionRequest, session: Session) -> Async
     except Exception as e:
         traceback.print_exception(e)
         yield ServerSentEvent(event="error").encode()
+
+
+class TranscriptionRequest(BaseModel):
+    file: Optional[str] = ""
+
+
+class TranscriptionResponse(BaseModel):
+    text: str
+
+
+@app.post('/sessions/{session_id}/transcriptions')
+async def answer_transcription(session_id: str, req: TranscriptionRequest, user: Annotated[str, Depends(get_current_user)]) -> TranscriptionResponse:
+    session = await _find_session(session_id, user)
+    ret = TranscriptionQuestion(base64=req.file, session=session)
+    audio_file_path = await transcriptions_repo.save_audio(ret)
+    text = Agent(session).transcript(audio_file_path)
+    return TranscriptionResponse(text=text)

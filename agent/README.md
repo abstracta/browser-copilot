@@ -105,7 +105,7 @@ The previous manifest includes the following sections:
       * `header`: the name of the header to add.
       * `value`: the value to send in the header. This value can contain `${sessionId}` to identify the session used by the copilot.
     * More to come :)
-  * `contactEmail`: specifies an email provided to copilot users so they can contact support in case they face any issues with the copilot.
+* `contactEmail`: specifies an email provided to copilot users so they can contact support in case they face any issues with the copilot.
 
 ### Authentication
 
@@ -118,6 +118,24 @@ Including in `manifest.json` an `auth` section with the following properties wil
 * `scopes`: the scopes required for your copilot. Check [sample.env](./sample.env) for some examples.
 
 Provided [sample.env](./sample.env) includes configurations for using Keycloak or Microsoft Entra ID.
+
+### Transcripts
+
+If you want your agent users to be able to ask questions by recording audios you can just add `"capabilities": ["transcript"]` to your `manifest.json` and implement a `sessions/${SESSION_ID}/transcripts` endpoint that recieves a request like the following:
+
+```json
+{
+    "file": "as545asd" // This is the base64 encoding of the audio file
+}
+```
+
+and answers with an answer like this one:
+
+```json
+{
+    "text": "Hello my friend" // This is the transcribed message
+}
+```
 
 #### Microsoft Entra ID
 

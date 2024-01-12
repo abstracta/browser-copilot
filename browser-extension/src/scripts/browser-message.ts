@@ -1,3 +1,5 @@
+import { AgentManifest } from "./agent"
+
 export abstract class BrowserMessage {
   type: string
 
@@ -18,7 +20,7 @@ export abstract class BrowserMessage {
       case "activateAgent":
         return new ActivateAgent(obj.agentId)
       case "agentActivated":
-        return new AgentActivated(obj.agentId, obj.agentName, obj.agentLogo, obj.contactEmail)
+        return new AgentActivated(obj.manifest, obj.logo)
       case "agentActivationError":
         return new AgentActivationError(obj.agentName, obj.contactEmail)
       case "userMessage":
@@ -73,17 +75,13 @@ export class ActivateAgent extends BrowserMessage {
 }
 
 export class AgentActivated extends BrowserMessage {
-  agentId: string
-  agentName: string
-  agentLogo: string
-  contactEmail: string
+  manifest: AgentManifest
+  logo: string
 
-  constructor(agentId: string, agentName: string, agentLogo: string, contactEmail: string) {
+  constructor(manifest: AgentManifest, logo: string) {
     super("agentActivated")
-    this.agentId = agentId
-    this.agentName = agentName
-    this.agentLogo = agentLogo
-    this.contactEmail = contactEmail
+    this.manifest = manifest
+    this.logo = logo
   }
 }
 

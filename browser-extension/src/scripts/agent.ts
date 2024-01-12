@@ -72,16 +72,6 @@ export class Agent {
             .flatMap(r => r.actions) : []
     }
 
-    public async transcriptAudio(audioFileBase64: string, sessionId: string, authService?: AuthService) {
-        let transcribedAudio = await this.postJson(`${this.url}/sessions/${sessionId}/transcriptions`, { file: audioFileBase64 }, authService)
-        return transcribedAudio
-    }
-
-    public async solveInteractionSummary(detail: any, sessionId: string, authService?: AuthService): Promise<string> {
-        let interaction = await this.postJson(`${this.url}/sessions/${sessionId}/interactions`, detail, authService)
-        return interaction.summary
-    }
-
     public async * ask(msg: string, sessionId: string, authService?: AuthService): AsyncIterable<string> {
         let ret = await fetchStreamJson(`${this.url}/sessions/${sessionId}/questions`, await this.buildHttpPost({ question: msg }, authService))
         if (ret.next) {
@@ -93,11 +83,22 @@ export class Agent {
         }
     }
 
+    public async transcriptAudio(audioFileBase64: string, sessionId: string, authService?: AuthService) {
+        let ret = await this.postJson(`${this.url}/sessions/${sessionId}/transcriptions`, { file: audioFileBase64 }, authService)
+        return ret.text
+    }
+
+    public async solveInteractionSummary(detail: any, sessionId: string, authService?: AuthService): Promise<string> {
+        let ret = await this.postJson(`${this.url}/sessions/${sessionId}/interactions`, detail, authService)
+        return ret.summary
+    }
+
 }
 
 export interface AgentManifest {
     id: string
     name: string
+    capabilities?: string[]
     welcomeMessage: string
     prompts?: Prompt[]
     onSessionClose?: EndAction
