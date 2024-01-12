@@ -17,6 +17,7 @@ from gpt_agent.file_system_repos import SessionsRepository, QuestionsRepository,
 logging.basicConfig()
 logger = logging.getLogger("gpt_agent")
 logger.level = logging.DEBUG
+logging.getLogger().level = logging.DEBUG
 
 app = FastAPI()
 assets_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'assets')
