@@ -9,6 +9,7 @@ import {
 } from "../scripts/browser-message"
 import CopilotChat, { ChatMessage } from "../components/CopilotChat.vue"
 import CopilotList from "../components/CopilotList.vue"
+import ToastMessage from "../components/ToastMessage.vue"
 
 const sidebar = ref<HTMLDivElement>()
 const agentId = ref<string>("")
@@ -55,7 +56,7 @@ const sendToServiceWorker = async (msg: BrowserMessage) => {
 }
 
 const onAgentActivationError = async (msg: AgentActivationError) => {
-  toast.error(t('activationError', { ...msg }))
+  toast.error({component: ToastMessage, props: { message: t('activationError', { ...msg })}})
 }
 
 const onAgentMessage = (msg: AgentMessage) => {
@@ -151,14 +152,14 @@ const onUserMessage = async (msg: string, file: Record<string, string>) => {
 <i18n>
 {
   "en": {
-    "activationError": "Cound not activate {agentName} Copilot. You can try again and if the issue persists then contact {contactEmail}.",
-    "recordInteractionError": "I could not process some information from the current site. This might impact the information and answers I provide. If the issue persists please contact {contactEmail}",
-    "answerUserError": "I am currently unable to complete your request. You can try again and if the issue persists contact {contactEmail}"
+    "activationError": "Cound not activate {agentName} Copilot. You can try again and if the issue persists then contact [{agentName} Copilot support](mailto:{contactEmail}?subject=Activation%20issue)",
+    "recordInteractionError": "I could not process some information from the current site. This might impact the information and answers I provide. If the issue persists please contact [support](mailto:{contactEmail}?subject=Interaction%20issue)",
+    "answerUserError": "I am currently unable to complete your request. You can try again and if the issue persists contact [support](mailto:{contactEmail}?subject=Question%20issue)"
   },
   "es": {
-    "activationError": "No se pudo activar el Copiloto {agentName}. Puedes intentar de nuevo y si el problema persiste contactar a {contactEmail}.",
-    "recordInteractionError": "No pude procesar informacion generada por la página actual. Esto puede impactar en la información y respuestas que te puedo dar. Si el problema persiste por favor contacta a {contactEmail}",
-    "answerUserError": "Ahora no puedo completar tu pedido. Puedes intentar de nuevo y si el problema persiste contactar a {contactEmail}"
+    "activationError": "No se pudo activar el Copiloto {agentName}. Puedes intentar de nuevo y si el problema persiste contactar al [soporte del Copiloto {agentName}](mailto:{contactEmail}?subject=Activation%20issue)",
+    "recordInteractionError": "No pude procesar informacion generada por la página actual. Esto puede impactar en la información y respuestas que te puedo dar. Si el problema persiste por favor contacta a [soporte](mailto:{contactEmail})?subject=Interaction%20issue",
+    "answerUserError": "Ahora no puedo completar tu pedido. Puedes intentar de nuevo y si el problema persiste contactar a [soporte](mailto:{contactEmail}?subject=Question%20issue)"
   }
 }
 </i18n>

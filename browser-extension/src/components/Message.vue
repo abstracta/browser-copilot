@@ -70,6 +70,11 @@ pre {
 pre code.hljs {
   padding: 0px;
 }
+
+div a {
+  color: var(--accent-color);
+  text-decoration: none;
+}
 </style>
 
 <i18n>
