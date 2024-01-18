@@ -131,15 +131,15 @@ const onActivateAgent = async (agentId: string) => {
 }
 
 const onAgentActivation = (msg: AgentActivation) => {
+  if (!displaying) {
+    onToggleSidebar()
+  }
   if (!msg.success) {
     let text = t('activationError', { agentName: msg.agent.manifest.name, contactEmail: msg.agent.manifest.contactEmail })
     toast.error({ component: ToastMessage, props: { message: text } })
-    return
-  }
-  agent.value = Agent.fromJsonObject(msg.agent)
-  messages.value.push(ChatMessage.agentMessage(agent.value.manifest.welcomeMessage))
-  if (!displaying) {
-    onToggleSidebar()
+  } else {
+    agent.value = Agent.fromJsonObject(msg.agent)
+    messages.value.push(ChatMessage.agentMessage(agent.value.manifest.welcomeMessage))
   }
 }
 

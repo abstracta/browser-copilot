@@ -4,7 +4,8 @@ import { findAllAgents, addAgent, findAgentById } from "./scripts/agent-reposito
 import { AgentSession } from "./scripts/agent-session"
 import { findAgentSession, saveAgentSession, removeAgentSession } from "./scripts/agent-session-repository"
 import { saveAgentPrompts } from "./scripts/prompt-repository"
-import { BrowserMessage, ToggleSidebar, ActiveTabListener, ActivateAgent } from "./scripts/browser-message"
+import { BrowserMessage, ToggleSidebar, ActiveTabListener, ActivateAgent, AgentActivation, InteractionSummary } from "./scripts/browser-message"
+import { HttpServiceError } from "./scripts/http"
 import { isActiveTabListener, setTabListenerActive, removeTabListenerStatus } from "./scripts/tab-listener-status-repository"
 import { removeTabState } from "./scripts/tab-state-repository"
 
@@ -91,8 +92,15 @@ const activateTabListener = async (tabId: number, active: boolean) => {
 
 const activateAgent = async (tabId: number, agent: Agent, url: string) => {
   let session = new AgentSession(tabId, agent, url)
-  await session.activate((msg: BrowserMessage) => sendToTab(tabId, msg))
-  await saveAgentSession(session)
+  let success = true
+  try {
+    await session.activate()
+    await saveAgentSession(session)
+  } catch (e) {
+    // exceptions from http methods are already logged so no need to handle them
+    success = false
+  }
+  sendToTab(tabId, new AgentActivation(agent, success))
 }
 
 browser.webRequest.onCompleted.addListener(async (req) => {
@@ -102,7 +110,15 @@ browser.webRequest.onCompleted.addListener(async (req) => {
   }
   let session = await findAgentSession(tabId)
   if (session) {
-    await session.processInteraction(req, (msg: BrowserMessage) => sendToTab(tabId, msg))
+    try {
+      let summary = await session.processInteraction(req)
+      if (summary) {
+        sendToTab(tabId, new InteractionSummary(true, summary))
+      }
+    } catch (e) {
+      // exceptions from http methods are already logged so no need to handle them
+      sendToTab(tabId, new InteractionSummary(false, (e instanceof HttpServiceError ? e.detail : undefined)))
+    }
   } else {
     let agents = await findAllAgents()
     for (const a of agents) {
@@ -114,7 +130,6 @@ browser.webRequest.onCompleted.addListener(async (req) => {
 }, { urls: ["http://*/*", "https://*/*"] })
 
 browser.tabs.onRemoved.addListener(async (tabId) => {
-  //TODO clear tabState
   await removeTabListenerStatus(tabId)
   pendingMessages?.delete(tabId)
   await removeTabState(tabId)

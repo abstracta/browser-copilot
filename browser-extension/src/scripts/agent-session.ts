@@ -2,7 +2,6 @@ import browser from "webextension-polyfill"
 import { Agent, AgentRuleCondition, AddHeaderRuleAction, RecordInteractionRuleAction } from './agent'
 import { AuthService } from './auth'
 import { HttpServiceError, fetchJson } from "./http"
-import { BrowserMessage, AgentActivation, InteractionSummary } from './browser-message'
 
 export class AgentSession {
   tabId: number
@@ -23,21 +22,14 @@ export class AgentSession {
     return new AgentSession(obj.tabId, Agent.fromJsonObject(obj.agent), obj.url, obj.id)
   }
 
-  public async activate(msgSender: (msg: BrowserMessage) => void) {
-    let success = true
-    try {
-      let resp = await this.agent.createSession(await browser.i18n.getAcceptLanguages(), this.authService)
-      this.id = resp.id
-      let httpAction = this.agent.activationAction?.httpRequest
-      if (httpAction) {
-        await fetchJson(this.solveUrlTemplate(httpAction.url, this.url), { method: httpAction.method })
-      }
-      await this.updateRequestRules()
-    } catch (e) {
-      // exceptions from http methods are already logged so no need to handle them
-      success = false
+  public async activate() {
+    let resp = await this.agent.createSession(await browser.i18n.getAcceptLanguages(), this.authService)
+    this.id = resp.id
+    let httpAction = this.agent.activationAction?.httpRequest
+    if (httpAction) {
+      await fetchJson(this.solveUrlTemplate(httpAction.url, this.url), { method: httpAction.method })
     }
-    msgSender(new AgentActivation(this.agent, success))
+    await this.updateRequestRules()
   }
 
   private solveUrlTemplate(urlTemplate: string, baseUrl: string): string {
@@ -98,25 +90,13 @@ export class AgentSession {
     return prevRules.filter(r => r.condition.tabIds?.includes(this.tabId)).map(r => r.id)
   }
 
-  public async processInteraction(req: browser.WebRequest.OnCompletedDetailsType, msgSender: (msg: BrowserMessage) => void) {
+  public async processInteraction(req: browser.WebRequest.OnCompletedDetailsType): Promise<string | undefined> {
     const actions = this.agent.findMatchingActions(req)
     for (const a of actions) {
       if (a.recordInteraction) {
-        await this.recordInteraction(req, a.recordInteraction, msgSender)
+        let interactionDetail = await this.findInteraction(req, a.recordInteraction)
+        return await this.agent.solveInteractionSummary(interactionDetail, this.id!, this.authService)
       }
-    }
-  }
-
-  private async recordInteraction(req: browser.WebRequest.OnCompletedDetailsType, action: RecordInteractionRuleAction, msgSender: (msg: BrowserMessage) => void) {
-    try {
-      let interactionDetail = await this.findInteraction(req, action)
-      let summary = await this.agent.solveInteractionSummary(interactionDetail, this.id!, this.authService)
-      if (summary) {
-        msgSender(new InteractionSummary(true, summary))
-      }
-    } catch (e) {
-      // exceptions from http methods are already logged so no need to handle them
-      msgSender(new InteractionSummary(false, (e instanceof HttpServiceError ? e.detail : undefined)))
     }
   }
 
