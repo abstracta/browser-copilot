@@ -127,7 +127,7 @@ export class AgentSession {
   public async processUserMessage(text: string, file: Record<string, string>, msgHandler: (text: string, complete: boolean, success: boolean) => void) {
     try {
       if (file.data) {
-        text = await this.agent.transcriptAudio(file.data, this.id!);
+        text = await this.agent.transcriptAudio(file.data, this.id!, this.authService);
       }
       let ret: AsyncIterable<string> = this.agent.ask(text, this.id!, this.authService)
       for await (const part of ret) {
