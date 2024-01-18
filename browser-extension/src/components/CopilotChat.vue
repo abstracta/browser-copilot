@@ -1,37 +1,10 @@
-<script lang="ts">
-let currentMsgId = 2
-
-export class ChatMessage {
-  id: number
-  text: string
-  file: Record<string, string>
-  isUser: boolean
-  isComplete: boolean
-
-  constructor(text: string, file: Record<string, string>, isUser: boolean, isComplete: boolean) {
-    this.id = currentMsgId++
-    this.text = text
-    this.file = file
-    this.isUser = isUser
-    this.isComplete = isComplete
-  }
-
-  public static userMessage(text: string, file: Record<string, string>): ChatMessage {
-    return new ChatMessage(text, file, true, true)
-  }
-
-  public static agentMessage(text?: string): ChatMessage {
-    return new ChatMessage(text || '', {}, false, text !== undefined)
-  }
-}
-</script>
-
 <script lang="ts" setup>
 import { ref, nextTick, watch, computed } from 'vue'
-import CopilotName from "../components/CopilotName.vue"
-import Message from "../components/Message.vue"
-import ChatInput from "../components/ChatInput.vue"
-import CopilotConfig from "../components/CopilotConfig.vue"
+import { ChatMessage } from '../scripts/tab-state'
+import CopilotName from "./CopilotName.vue"
+import Message from "./Message.vue"
+import ChatInput from "./ChatInput.vue"
+import CopilotConfig from "./CopilotConfig.vue"
 import PageOverlay from "./PageOverlay.vue"
 import BtnClose from './BtnClose.vue'
 
@@ -76,9 +49,8 @@ const lastMessage = computed((): ChatMessage => props.messages[props.messages.le
     <template v-slot:content>
       <div class="h-full flex flex-col">
         <div class="h-full flex flex-col overflow-y-auto mb-4 rounded-[var(--spacing)]" ref="messagesDiv">
-          <Message v-for="message in messages" :key="message.id" :text="message.text" :file="message.file"
-            :is-user="message.isUser" :is-complete="message.isComplete" :agent-logo="agentLogo" :agent-name="agentName"
-            :agent-id="agentId" />
+          <Message v-for="message in messages" :text="message.text" :file="message.file" :is-user="message.isUser"
+            :is-complete="message.isComplete" :agent-logo="agentLogo" :agent-name="agentName" :agent-id="agentId" />
         </div>
         <ChatInput :can-send-message="lastMessage.isComplete" :agent-id="agentId"
           :support-recording="agentCapabilities.includes('transcripts')" @send-message="onUserMessage" />

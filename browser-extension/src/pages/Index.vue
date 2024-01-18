@@ -1,134 +1,188 @@
 <script lang="ts" setup>
-import { ref, onBeforeMount, nextTick } from 'vue'
+import { ref, onBeforeMount, onBeforeUnmount, toRaw } from 'vue'
 import browser from "webextension-polyfill"
 import { useToast } from "vue-toastification"
 import { useI18n } from 'vue-i18n'
-import {
-  BrowserMessage, DisplaySidebar, CloseSidebar, ActivateAgent, AgentActivated,
-  AgentActivationError, UserMessage, AgentMessage, AgentErrorMessage
-} from "../scripts/browser-message"
-import CopilotChat, { ChatMessage } from "../components/CopilotChat.vue"
+import { BrowserMessage, ActiveTabListener, ToggleSidebar, ActivateAgent, AgentActivation, InteractionSummary, ResizeSidebar } from "../scripts/browser-message"
+import { Agent } from "../scripts/agent"
+import { TabState, ChatMessage } from "../scripts/tab-state"
+import { findTabState, saveTabState } from "../scripts/tab-state-repository"
+import { findAgentSession } from '../scripts/agent-session-repository'
+import CopilotChat from "../components/CopilotChat.vue"
 import CopilotList from "../components/CopilotList.vue"
 import ToastMessage from "../components/ToastMessage.vue"
 
-const sidebar = ref<HTMLDivElement>()
-const agentId = ref<string>("")
-const agentLogo = ref<string>("")
-const agentName = ref<string>("")
-let agentContactEmail: string
-const agentCapabilities = ref<string[]>([])
-const lastResizePos = ref<number>()
-const messages = ref<ChatMessage[]>([])
 const toast = useToast()
 const { t } = useI18n()
 
-onBeforeMount(() => {
-  browser.runtime.onMessage.addListener(async (m: any) => {
-    let msg = BrowserMessage.fromJsonObject(m)
-    if (msg instanceof AgentActivated) {
-      await onAgentActivated(msg)
-    } else if (msg instanceof AgentActivationError) {
-      await onAgentActivationError(msg)
-    } else if (msg instanceof AgentMessage) {
-      onAgentMessage(msg)
-    } else if (msg instanceof AgentErrorMessage) {
-      onAgentErrorMessage(msg)
+const agent = ref<Agent>()
+let sidebarSize = 400
+let displaying = false
+const minSidebarSize = 200
+let lastResizePos = 0
+const messages = ref<ChatMessage[]>([])
+
+onBeforeMount(async () => {
+  await restoreTabState()
+  // we collect messages until we get all pending to avoid potential message order.
+  // This may happen if listener is up, sends ActivateTabListener and while message 
+  // is being processed (and pending messages collected and returned) the service worker sends messages for processing here
+  let collectedMessages: any[] | undefined = []
+  browser.runtime.onMessage.addListener((m: any) => {
+    if (collectedMessages === undefined) {
+      onMessage(m)
+    } else {
+      collectedMessages.push(m)
     }
   })
+  let pendingMessages: any = await sendToServiceWorker(new ActiveTabListener(true))
+  for (const m of pendingMessages) {
+    onMessage(m)
+  }
+  for (const m of collectedMessages) {
+    onMessage(m)
+  }
+  collectedMessages = undefined
 })
 
-const onAgentActivated = async (msg: AgentActivated) => {
-  agentId.value = msg.manifest.id
-  agentName.value = msg.manifest.name
-  agentLogo.value = msg.logo
-  agentContactEmail = msg.manifest.contactEmail
-  agentCapabilities.value = msg.manifest.capabilities || []
+const restoreTabState = async () => {
+  let tabId = await getCurrentTabId()
+  let tabState = await findTabState(tabId)
+  if (tabState) {
+    sidebarSize = tabState.sidebarSize
+    displaying = tabState.displaying
+    agent.value = tabState.agent
+    messages.value = tabState.messages
+  }
+  if (displaying) {
+    resizeSidebar(sidebarSize)
+  }
+}
+
+const sendToServiceWorker = async (msg: BrowserMessage): Promise<any> => {
+  return await browser.runtime.sendMessage(msg)
+}
+
+onBeforeUnmount(async () => {
+  let tabId = await getCurrentTabId()
+  await saveTabState(tabId, new TabState(sidebarSize, displaying, toRaw(messages.value), toRaw(agent.value)))
+  // wait for message processing so we are sure that before loading new content this has been marked as not ready for messages
+  await sendToServiceWorker(new ActiveTabListener(false))
+})
+
+const onMessage = (m: any) => {
+  let msg = BrowserMessage.fromJsonObject(m)
+  if (msg instanceof ToggleSidebar) {
+    onToggleSidebar()
+  } else if (msg instanceof AgentActivation) {
+    onAgentActivation(msg)
+  } else if (msg instanceof InteractionSummary) {
+    onInteractionSummary(msg)
+  }
+}
+
+const onToggleSidebar = () => {
+  displaying = !displaying
+  resizeSidebar(displaying ? sidebarSize : 0)
+}
+
+const resizeSidebar = async (size: number) => {
+  browser.tabs.sendMessage(await getCurrentTabId(), new ResizeSidebar(size))
+}
+
+const getCurrentTabId = async (): Promise<number> => {
+  let ret = await browser.tabs.getCurrent()
+  return ret.id!
+}
+
+
+const onStartResize = (e: MouseEvent) => {
+  lastResizePos = e.screenX
+  window.document.body.className = "resizing"
+  window.addEventListener("mousemove", onResize)
+  window.addEventListener("mouseup", onEndResize)
+}
+
+const onResize = async (e: MouseEvent) => {
+  e.preventDefault()
+  let delta = lastResizePos - e.screenX
+  lastResizePos = e.screenX
+  sidebarSize += delta
+  if (sidebarSize < minSidebarSize) {
+    sidebarSize = minSidebarSize
+  }
+  resizeSidebar(sidebarSize)
+}
+
+const onEndResize = () => {
+  window.document.body.className = ""
+  window.removeEventListener("mousemove", onResize)
+  window.removeEventListener("mouseup", onEndResize)
+}
+
+const onCloseSidebar = () => {
+  displaying = false
+  resizeSidebar(0)
+}
+
+const onActivateAgent = async (agentId: string) => {
+  let tab = await browser.tabs.getCurrent()
+  sendToServiceWorker(new ActivateAgent(agentId, tab.url!))
+}
+
+const onAgentActivation = (msg: AgentActivation) => {
+  if (!msg.success) {
+    let text = t('activationError', { agentName: msg.agent.manifest.name, contactEmail: msg.agent.manifest.contactEmail })
+    toast.error({ component: ToastMessage, props: { message: text } })
+    return
+  }
+  agent.value = Agent.fromJsonObject(msg.agent)
+  messages.value.push(ChatMessage.agentMessage(agent.value.manifest.welcomeMessage))
+  if (!displaying) {
+    onToggleSidebar()
+  }
+}
+
+const onInteractionSummary = (msg: InteractionSummary) => {
+  let text = msg.text ? msg.text : t("interactionSummaryError", { contactEmail: agent.value!.manifest.contactEmail })
+  let lastMessage = messages.value[messages.value.length - 1]
+  let messagePosition = lastMessage.isComplete ? messages.value.length : messages.value.length - 1
+  messages.value.splice(messagePosition, 0, ChatMessage.agentMessage(text))
+}
+
+const onUserMessage = async (text: string, file: Record<string, string>) => {
+  messages.value.push(ChatMessage.userMessage(text, file))
   messages.value.push(ChatMessage.agentMessage())
-  if (sidebar.value?.clientWidth == 0) {
-    await nextTick(async () => {
-      await sendToServiceWorker(new DisplaySidebar())
-    })
-  }
+  let agentSession = await findAgentSession(await getCurrentTabId())
+  agentSession!.processUserMessage(text, file, onAgentResponse)
 }
 
-const sendToServiceWorker = async (msg: BrowserMessage) => {
-  await browser.runtime.sendMessage(msg)
-}
-
-const onAgentActivationError = async (msg: AgentActivationError) => {
-  toast.error({component: ToastMessage, props: { message: t('activationError', { ...msg })}})
-}
-
-const onAgentMessage = (msg: AgentMessage) => {
+const onAgentResponse = (text: string, complete: boolean, success: boolean) => {
   let lastMessage = messages.value[messages.value.length - 1]
-  if (!lastMessage.isComplete) {
-    lastMessage.isComplete = msg.isComplete
-    lastMessage.text += msg.text
-  } else {
-    messages.value.push(ChatMessage.agentMessage(msg.text))
-  }
-}
-
-const onAgentErrorMessage = (msg: AgentErrorMessage) => {
-  let lastMessage = messages.value[messages.value.length - 1]
-  let text = msg.detail ? msg.detail : t(msg.context + "Error", { contactEmail: agentContactEmail })
-  if (msg.context === "recordInteraction") {
-    let messagePosition = lastMessage.isComplete ? messages.value.length : messages.value.length - 1
-    messages.value.splice(messagePosition, 0, ChatMessage.agentMessage(text))
-  } else {
+  if (!success) {
+    text = text ? text : t("agentAnswerError", { contactEmail: agent.value!.manifest.contactEmail })
     lastMessage.isComplete = true
     if (!lastMessage.text) {
       lastMessage.text += text
     } else {
       messages.value.push(ChatMessage.agentMessage(text))
     }
+  } else {
+    lastMessage.isComplete = complete
+    lastMessage.text += text
   }
-}
-
-const startResize = (e: MouseEvent) => {
-  lastResizePos.value = e.screenX
-  window.document.body.className = "resizing"
-  window.addEventListener("mousemove", resize)
-  window.addEventListener("mouseup", endResize)
-}
-
-const resize = async (e: MouseEvent) => {
-  e.preventDefault()
-  let delta = lastResizePos.value! - e.screenX
-  lastResizePos.value = e.screenX
-  let tab = await browser.tabs.getCurrent()
-  await browser.tabs.sendMessage(tab.id!, { type: "resizeSidebar", delta: delta })
-}
-
-const endResize = () => {
-  window.document.body.className = ""
-  window.removeEventListener("mousemove", resize)
-  window.removeEventListener("mouseup", endResize)
-}
-
-const closeSidebar = () => {
-  sendToServiceWorker(new CloseSidebar())
-}
-
-const onActivateAgent = async (agentId: string) => {
-  await sendToServiceWorker(new ActivateAgent(agentId))
-}
-
-const onUserMessage = async (msg: string, file: Record<string, string>) => {
-  messages.value.push(ChatMessage.userMessage(msg, file))
-  messages.value.push(ChatMessage.agentMessage())
-  await sendToServiceWorker(new UserMessage(msg, file))
 }
 </script>
 
 <template>
   <div
     class="fixed flex flex-col left-[-10px] w-full h-[var(--sidebar-height)] justify-left m-[var(--spacing)] border-[.1px] border-slate-500 bg-[var(--background-color)] rounded-tl-[var(--top-round-corner)] rounded-bl-[var(--bottom-round-corner)]"
-    id="sidebar" ref="sidebar">
-    <div class="absolute left-0 z-[1000] cursor-ew-resize w-[var(--spacing)] h-full" @mousedown="startResize" />
-    <CopilotChat v-if="agentId" :messages="messages" :agent-id="agentId" :agent-name="agentName" :agent-logo="agentLogo"
-      :agent-capabilities="agentCapabilities" @userMessage="onUserMessage" @close="closeSidebar" />
-    <CopilotList v-if="!agentId" @activateAgent="onActivateAgent" @close="closeSidebar" />
+    id="sidebar">
+    <div class="absolute left-0 z-[1000] cursor-ew-resize w-[var(--spacing)] h-full" @mousedown="onStartResize" />
+    <CopilotChat v-if="agent" :messages="messages" :agent-id="agent.manifest.id" :agent-name="agent.manifest.name"
+      :agent-logo="agent.logo" :agent-capabilities="agent.manifest.capabilities || []" @userMessage="onUserMessage"
+      @close="onCloseSidebar" />
+    <CopilotList v-if="!agent" @activateAgent="onActivateAgent" @close="onCloseSidebar" />
   </div>
 </template>
 
@@ -153,13 +207,13 @@ const onUserMessage = async (msg: string, file: Record<string, string>) => {
 {
   "en": {
     "activationError": "Cound not activate {agentName} Copilot. You can try again and if the issue persists then contact [{agentName} Copilot support](mailto:{contactEmail}?subject=Activation%20issue)",
-    "recordInteractionError": "I could not process some information from the current site. This might impact the information and answers I provide. If the issue persists please contact [support](mailto:{contactEmail}?subject=Interaction%20issue)",
-    "answerUserError": "I am currently unable to complete your request. You can try again and if the issue persists contact [support](mailto:{contactEmail}?subject=Question%20issue)"
+    "interactionSummaryError": "I could not process some information from the current site. This might impact the information and answers I provide. If the issue persists please contact [support](mailto:{contactEmail}?subject=Interaction%20issue)",
+    "agentAnswerError": "I am currently unable to complete your request. You can try again and if the issue persists contact [support](mailto:{contactEmail}?subject=Question%20issue)"
   },
   "es": {
     "activationError": "No se pudo activar el Copiloto {agentName}. Puedes intentar de nuevo y si el problema persiste contactar al [soporte del Copiloto {agentName}](mailto:{contactEmail}?subject=Activation%20issue)",
-    "recordInteractionError": "No pude procesar informacion generada por la página actual. Esto puede impactar en la información y respuestas que te puedo dar. Si el problema persiste por favor contacta a [soporte](mailto:{contactEmail})?subject=Interaction%20issue",
-    "answerUserError": "Ahora no puedo completar tu pedido. Puedes intentar de nuevo y si el problema persiste contactar a [soporte](mailto:{contactEmail}?subject=Question%20issue)"
+    "interactionSummaryError": "No pude procesar informacion generada por la página actual. Esto puede impactar en la información y respuestas que te puedo dar. Si el problema persiste por favor contacta a [soporte](mailto:{contactEmail})?subject=Interaction%20issue",
+    "agentAnswerError": "Ahora no puedo completar tu pedido. Puedes intentar de nuevo y si el problema persiste contactar a [soporte](mailto:{contactEmail}?subject=Question%20issue)"
   }
 }
 </i18n>

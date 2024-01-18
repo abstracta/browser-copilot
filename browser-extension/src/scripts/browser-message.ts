@@ -1,4 +1,4 @@
-import { AgentManifest } from "./agent"
+import { Agent } from "./agent"
 
 export abstract class BrowserMessage {
   type: string
@@ -7,28 +7,20 @@ export abstract class BrowserMessage {
     this.type = type
   }
 
-  static fromJsonObject(obj: any): BrowserMessage {
+  public static fromJsonObject(obj: any): BrowserMessage {
     switch (obj.type) {
+      case "activeTabListener":
+        return ActiveTabListener.fromJsonObject(obj)
       case "toggleSidebar":
         return new ToggleSidebar()
-      case "displaySidebar":
-        return new DisplaySidebar()
-      case "closeSidebar":
-        return new CloseSidebar()
       case "resizeSidebar":
-        return new ResizeSidebar(obj.delta)
+        return ResizeSidebar.fromJsonObject(obj)
       case "activateAgent":
-        return new ActivateAgent(obj.agentId)
-      case "agentActivated":
-        return new AgentActivated(obj.manifest, obj.logo)
-      case "agentActivationError":
-        return new AgentActivationError(obj.agentName, obj.contactEmail)
-      case "userMessage":
-        return new UserMessage(obj.text, obj.file)
-      case "agentMessage":
-        return new AgentMessage(obj.text, obj.isComplete)
-      case "agentErrorMessage":
-        return new AgentErrorMessage(obj.context, obj.detail)
+        return ActivateAgent.fromJsonObject(obj)
+      case "agentActivation":
+        return AgentActivation.fromJsonObject(obj)
+      case "interactionSummary":
+        return InteractionSummary.fromJsonObject(obj)
       default:
         // we log and throw since the handling should be the same in all points and error allows to properly interrupt any further processing of the message
         let msg = `Unknown message type: ${obj.type}`
@@ -38,101 +30,79 @@ export abstract class BrowserMessage {
   }
 }
 
+export class ActiveTabListener extends BrowserMessage {
+  active: boolean
+
+  constructor(active: boolean) {
+    super("activeTabListener")
+    this.active = active
+  }
+
+  public static fromJsonObject(obj: any): ActiveTabListener {
+    return new ActiveTabListener(obj.active)
+  }
+}
+
 export class ToggleSidebar extends BrowserMessage {
   constructor() {
     super("toggleSidebar")
   }
 }
 
-export class DisplaySidebar extends BrowserMessage {
-  constructor() {
-    super("displaySidebar")
-  }
-}
-
-export class CloseSidebar extends BrowserMessage {
-  constructor() {
-    super("closeSidebar")
-  }
-}
-
 export class ResizeSidebar extends BrowserMessage {
-  delta: number
+  size: number
 
-  constructor(delta: number) {
+  constructor(size: number) {
     super("resizeSidebar")
-    this.delta = delta
+    this.size = size
+  }
+
+  public static fromJsonObject(obj: any): ResizeSidebar {
+    return new ResizeSidebar(obj.size)
   }
 }
 
 export class ActivateAgent extends BrowserMessage {
   agentId: string
+  url: string
 
-  constructor(agentId: string) {
+  constructor(agentId: string, url: string) {
     super("activateAgent")
     this.agentId = agentId
+    this.url = url
+  }
+
+  public static fromJsonObject(obj: any): ActivateAgent {
+    return new ActivateAgent(obj.agentId, obj.url)
   }
 }
 
-export class AgentActivated extends BrowserMessage {
-  manifest: AgentManifest
-  logo: string
+export class AgentActivation extends BrowserMessage {
+  agent: Agent
+  success: boolean
 
-  constructor(manifest: AgentManifest, logo: string) {
-    super("agentActivated")
-    this.manifest = manifest
-    this.logo = logo
+  constructor(agent: Agent, success: boolean) {
+    super("agentActivation")
+    this.agent = agent
+    this.success = success
+  }
+
+  public static fromJsonObject(obj: any): AgentActivation {
+    return new AgentActivation(Agent.fromJsonObject(obj.agent), obj.success)
   }
 }
 
-export class AgentActivationError extends BrowserMessage {
-  agentName: string
-  contactEmail: string
+export class InteractionSummary extends BrowserMessage {
+  text?: string
+  success: boolean
 
-  constructor(agentName: string, contactEmail: string) {
-    super("agentActivationError")
-    this.agentName = agentName
-    this.contactEmail = contactEmail
-  }
-}
-
-export class UserMessage extends BrowserMessage {
-  text: string
-  file: Record<string, string>
-
-  constructor(msg: string, file: Record<string, string>) {
-    super("userMessage")
-    this.text = msg
-    this.file = file
-  }
-}
-
-export class AgentMessage extends BrowserMessage {
-  text: string
-  isComplete: boolean
-
-  constructor(msg: string, isComplete: boolean) {
-    super("agentMessage")
-    this.text = msg
-    this.isComplete = isComplete
+  constructor(success: boolean, text?: string) {
+    super("interactionSummary")
+    this.text = text
+    this.success = success
   }
 
-  public static incomplete(msg: string): AgentMessage {
-    return new AgentMessage(msg, false)
-  }
-
-  public static complete(msg = ""): AgentMessage {
-    return new AgentMessage(msg, true)
-  }
-}
-
-export class AgentErrorMessage extends BrowserMessage {
-  context: string
-  detail?: string
-
-  constructor(context: string, detail?: string) {
-    super("agentErrorMessage")
-    this.context = context
-    this.detail = detail
+  public static fromJsonObject(obj: any): InteractionSummary {
+    return new InteractionSummary(obj.success, obj.text)
   }
 }

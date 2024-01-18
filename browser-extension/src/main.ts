@@ -19,3 +19,6 @@ app.use(VueTablerIcons)
 app.use(i18n)
 app.use(Toast, {})
 app.mount("body")
+
+let elem : HTMLBodyElement = document.getElementsByTagName("body")[0]
+elem!.onbeforeunload = () => app.unmount()

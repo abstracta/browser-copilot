@@ -1,8 +1,5 @@
 import browser from "webextension-polyfill";
-import { BrowserMessage, ToggleSidebar, ResizeSidebar } from "./scripts/browser-message";
-
-let sidebarWidth = 400
-const minWidth = 200
+import { BrowserMessage, ResizeSidebar } from "./scripts/browser-message";
 
 const setSidebarIframeStyle = (iframe: HTMLIFrameElement) => {
     let style = iframe.style;
@@ -15,18 +12,11 @@ const setSidebarIframeStyle = (iframe: HTMLIFrameElement) => {
     style.border = "0px";
 }
 
-const toggle = () => {
-    iframe.style.width = iframe.style.width == "0px" ? sidebarWidth + "px" : "0px"
-}
-
-const resize = (delta: number) => {
-    sidebarWidth += delta
-    if (sidebarWidth < minWidth) {
-        sidebarWidth = minWidth
-    } else if (sidebarWidth > window.innerWidth) {
-        sidebarWidth = window.innerWidth
+const resize = (size: number) => {
+    if (size > window.innerWidth) {
+        size = window.innerWidth
     }
-    iframe.style.width = sidebarWidth + "px"
+    iframe.style.width = size + "px"
 }
 
 let iframe = document.createElement('iframe')
@@ -37,9 +27,7 @@ document.body.appendChild(iframe)
 
 browser.runtime.onMessage.addListener((m: any) => {
     let msg = BrowserMessage.fromJsonObject(m)
-    if (msg instanceof ToggleSidebar) {
-        toggle()
-    } else if (msg instanceof ResizeSidebar) {
-        resize(msg.delta)
+    if (msg instanceof ResizeSidebar) {
+        resize(msg.size)
     }
 })
