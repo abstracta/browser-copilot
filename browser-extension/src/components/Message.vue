@@ -36,14 +36,14 @@ const renderedMsg = computed(() => props.isUser ? props.text.replaceAll("\n", "<
       </div>
     </div>
     <div class="mt-[10px] ml-[30px]">
-      <div class="flex flex-col font-light text-[15px] leading-tight gap-[15px]" id="rendered-msg">
+      <div>
         <template v-if="file.data">
           <audio controls>
             <source :src="file.url" type="audio/webm">
           </audio>
         </template>
         <template v-if="text">
-          <div v-html="renderedMsg" />
+          <div v-html="renderedMsg" class="flex flex-col font-light text-[15px] leading-tight gap-[15px]" id="rendered-msg"/>
         </template>
       </div>
       <div class="ml-[10px] dot-pulse" v-if="!isComplete" />
