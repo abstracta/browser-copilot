@@ -10,7 +10,9 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
       - uses: jetpack-io/devbox-install-action@v0.7.0
         with:
           enable-cache: 'true'
@@ -29,7 +31,7 @@ jobs:
       - name: build release
         run: devbox run build
       - name: commit release version
-        uses: stefanzweifel/git-auto-commit-action@v4
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: '[skip ci] Set release version'
           branch: main
