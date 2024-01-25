@@ -32,7 +32,7 @@ const renderedMsg = computed(() => props.isUser ? props.text.replaceAll("\n", "<
       <span class="text-[15px]">{{ isUser ? t('you') : agentName }}</span>
       <div class="flex-auto flex justify-end">
         <CopyButton v-if="!isUser && text" :text="text" :html="renderedMsg" />
-        <NewPromptButton v-if="isUser && !file" :is-large-icon="false" :text="text" :agent-id="agentId" />
+        <NewPromptButton v-if="isUser && text" :is-large-icon="false" :text="text" :agent-id="agentId" />
       </div>
     </div>
     <div class="mt-[10px] ml-[30px]">
