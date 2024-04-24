@@ -48,7 +48,7 @@ devbox run install
 Next, set appropriate environment variables in `agent/.env`.
 
 > To speed up development, you can comment out the Keycloak section, so you don't need to authenticate every time you want to try your copilot in the extension.
-> If you don't comment out the Keycloak section, then you need to run `devbox run keycloak` to sping up Keycloak for authentication and use `test` `test` credentials for login (when requested by the browser extension).
+> If you don't comment out the Keycloak section, then you need to run `devbox run keycloak` to spin up Keycloak for authentication and use `test` `test` credentials for login (when requested by the browser extension).
 
 To run the agent in dev mode, enabling automatic hot-reloading whenever any changes are detected in the agent source files, execute the following command:
 
