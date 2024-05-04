@@ -29,7 +29,7 @@ export class HttpServiceError extends Error {
 
 }
 
-export async function* fetchStreamJson(url: string, options?: RequestInit): AsyncIterable<string> | any {
+export async function* fetchStreamJson(url: string, options?: RequestInit): AsyncIterable<any> {
   let resp = await fetchResponse(url, options)
   let contentType = resp.headers.get("content-type")
   if (contentType?.startsWith("text/event-stream")) {
@@ -38,7 +38,7 @@ export async function* fetchStreamJson(url: string, options?: RequestInit): Asyn
       yield part
     }
   } else {
-    return await resp.json()
+    yield resp.json()
   }
 }
 

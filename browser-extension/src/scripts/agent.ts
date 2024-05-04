@@ -74,12 +74,12 @@ export class Agent {
 
     public async * ask(msg: string, sessionId: string, authService?: AuthService): AsyncIterable<string> {
         let ret = await fetchStreamJson(`${this.sessionUrl(sessionId)}/questions`, await this.buildHttpPost({ question: msg }, authService))
-        if (ret.next) {
-            for await (const part of ret) {
+        for await (const part of ret) {
+            if (typeof part === "string") {
                 yield part
+            } else {
+                yield part.answer
             }
-        } else {
-            yield ret.answer
         }
     }
 

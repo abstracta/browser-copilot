@@ -109,7 +109,7 @@ export class AgentSession {
       if (file.data) {
         text = await this.agent.transcriptAudio(file.data, this.id!, this.authService);
       }
-      let ret: AsyncIterable<string> = this.agent.ask(text, this.id!, this.authService)
+      let ret = this.agent.ask(text, this.id!, this.authService)
       for await (const part of ret) {
         msgHandler(part, false, true)
       }
