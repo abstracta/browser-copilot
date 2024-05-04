@@ -1,0 +1,10 @@
+{
+    "id": "mock",
+    "name": "Mock",
+    "welcomeMessage": "Hi, I'm just a mock that echoes your messages.",
+    "prompts": [
+        { "name" : "hello", "text" : "Hello, how are you?" }
+    ],
+    "contactEmail": "support@mockagent.example"
+  }
+  

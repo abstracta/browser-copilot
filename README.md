@@ -35,7 +35,7 @@ In the future, we plan to add a catalog of copilots contributed by the community
 
 ### Agent Development
 
-To develop a new agent, you can refer to the [agent folder](./agent) for a simple example.
+To develop a new agent, you can refer to the [agent-mock](./agent-mock), [agent-simple](./agent-simple) or [agent-extended](./agent-extended/) folders. The later is the most complete one with proper documentation on endpoints and `manifest.json`.
 
 For the development environment, this project uses [devbox](https://www.jetpack.io/devbox) and [direnv](https://github.com/direnv/direnv).
 
@@ -45,7 +45,7 @@ To install all required dependencies (after installing devbox and direnv), run t
 devbox run install
 ```
 
-Next, set appropriate environment variables in `agent/.env`.
+Next, set appropriate environment variables in `agent-extended/.env`.
 
 > To speed up development, you can comment out the Keycloak section, so you don't need to authenticate every time you want to try your copilot in the extension.
 > If you don't comment out the Keycloak section, then you need to run `devbox run keycloak` to spin up Keycloak for authentication and use `test` `test` credentials for login (when requested by the browser extension).

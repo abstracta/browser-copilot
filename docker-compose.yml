@@ -7,6 +7,8 @@ services:
     environment:
       - OPENID_URL=http://keycloak:8080/realms/browser-copilot
       - MANIFEST_OPENID_URL=http://localhost:8080/realms/browser-copilot
+    volumes:
+      - ./agent-extended/gpt_agent:/usr/src/app/gpt_agent
   keycloak:
     image: quay.io/keycloak/keycloak
     ports: 

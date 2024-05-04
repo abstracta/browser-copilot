@@ -6,7 +6,7 @@
     "nodePackages.pnpm@latest"
   ],
   "env": {
-    "DEVBOX_PYPROJECT_DIR": "$PWD/agent"
+    "DEVBOX_PYPROJECT_DIR": "$PWD/agent-extended"
   },
   "shell": {
     "init_hook": [
@@ -17,14 +17,14 @@
         "docker-compose up keycloak"
       ],
       "agent": [
-        "cd agent && poetry run python -m gpt_agent 1"
+        "cd agent-extended && poetry run python -m gpt_agent 1"
       ],
       "browser": [
         "pnpm --dir browser-extension dev"
       ],
       "install": [
         "pnpm --dir browser-extension install",
-        "cd agent",
+        "cd agent-extended",
         "poetry install",
         "[ -e '.env' ] || (cp sample.env .env && echo '.env file has been created, PLEASE CHECK THAT ALL PROPERTIES ARE PROPERLY SET!')"
       ],
@@ -33,9 +33,7 @@
         "pnpm build",
         "cd dist",
         "[ ! -e browser-copilot.zip ] || rm browser-copilot.zip",
-        "zip -r browser-copilot.zip *",
-        "cd ../../agent",
-        "poetry build"
+        "zip -r browser-copilot.zip *"
       ]
     }
   }

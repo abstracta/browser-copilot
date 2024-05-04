@@ -1,0 +1,10 @@
+{
+    "id": "simple",
+    "name": "Simple",
+    "welcomeMessage": "Hi, I am an assistant based on GPT!\n\nI can help you with any question you may have. For example: you can ask me the current time :).",
+    "prompts": [
+        { "name" : "clock", "text" : "what is the current time?" }
+    ],
+    "contactEmail": "support@simpleagent.example"
+  }
+  

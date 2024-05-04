@@ -1,6 +1,6 @@
-# GPT Agent Example
+# agent-extended
 
-This is a simple agent example that integrates with OpenAI (or Azure OpenAI) and provides a similar basic experience to ChatGPT.
+This is an agent example that integrates with OpenAI (or Azure OpenAI) and provides a similar basic experience to ChatGPT, including authentication, proper session handling, response streaming and transcripts support.
 
 It is developed using the following:
 
