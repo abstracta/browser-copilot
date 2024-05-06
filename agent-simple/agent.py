@@ -7,7 +7,7 @@ from fastapi import FastAPI, status
 from fastapi.responses import FileResponse, Response
 from langchain.agents.agent_toolkits import create_conversational_retrieval_agent
 from langchain.tools import tool
-from langchain_community.chat_models import AzureChatOpenAI, ChatOpenAI
+from langchain_community.chat_models import ChatOpenAI
 from pydantic import BaseModel, Field
 
 import dotenv
@@ -55,11 +55,12 @@ def clock():
     return str(datetime.datetime.now())
 
 
+llm = ChatOpenAI(model_name=os.getenv("MODEL_NAME"), temperature=0.7, verbose=True, streaming=True)
+agent = create_conversational_retrieval_agent(llm, [clock], max_iterations=3)
+
+
 @app.post('/sessions/{session_id}/questions', status_code=status.HTTP_200_OK)
 async def answer_question(session_id: str, req: QuestionRequest) -> QuestionResponse:
-    base_url = os.getenv("OPENAI_API_BASE")
-    llm = AzureChatOpenAI(deployment_name=os.getenv("AZURE_DEPLOYMENT_NAME"), temperature=0.7, verbose=True, streaming=True) if ".openai.azure.com" in base_url else ChatOpenAI(model_name=os.getenv("MODEL_NAME"), temperature=temperature, verbose=True, streaming=True)
-    agent = create_conversational_retrieval_agent(llm, [clock], max_iterations=3)
     resp = agent.invoke(req.question)
     return QuestionResponse(answer=resp['output'])
 
