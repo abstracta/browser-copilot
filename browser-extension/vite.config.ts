@@ -36,4 +36,7 @@ export default defineConfig({
       jitCompilation: true
     }),
   ],
+  build: {
+    sourcemap: true
+  }
 });
