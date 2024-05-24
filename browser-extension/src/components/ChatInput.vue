@@ -10,7 +10,7 @@ const props = defineProps<{
   agentId: string
 }>()
 const emit = defineEmits<{
-  (e: 'sendMessage', text: string, file: Record<string, string> ): void
+  (e: 'sendMessage', text: string, file: Record<string, string>): void
 }>()
 const { t } = useI18n()
 const inputText = ref('')
@@ -85,7 +85,7 @@ const stopRecorder = () => {
    * If you don't stop the tracks, the media devices (like the microphone) 
    * will continue to be used, and their indicator lights may stay on. 
    * This can lead to privacy concerns, as users might think they are still being recorded.
-  * */ 
+  * */
   recordingStream.getTracks().forEach(track => track.stop());
 }
 
@@ -96,8 +96,8 @@ const sendAudioRecord = () => {
     const audioObjectUrl = URL.createObjectURL(audioBlob);
     blobToBase64(audioBlob).then(result => {
       const base64WithoutTags = (result as string).substr((result as string).indexOf(',') + 1);
-      emit("sendMessage", "", {data: base64WithoutTags, url: audioObjectUrl})
-    }) 
+      emit("sendMessage", "", { data: base64WithoutTags, url: audioObjectUrl })
+    })
     recordingChunks = []
   }
   stopRecorder()
@@ -157,41 +157,56 @@ const loadPromptList = async () => {
 </script>
 
 <template>
-  <div class="flex flex-row rounded-[6px] p-[5px] border-[1px] border-[#754BDE] shadow-sm">
-    <TextArea class="w-full ml-[5px] mr-[10px] resize-none overflow-hidden max-h-[60px] border-0 outline-0 self-center text-[10.5px]" :placeholder="!recordingAudio ? t('placeholder') : t('placeholderRecordingAudio')" v-model="inputText" @keydown="onKeydown" focused
-      :cursor-position="inputPosition" />
-      
-      <template v-if="!recordingAudio">
-        <button @click="sendMessage"><brand-telegram-icon /></button>
-        <button v-if="canRecord()" @click="startRecording"><microphone-icon/></button>
+  <div class="flex flex-row rounded-[6px] p-[5px] border-[1px] border-[#754BDE] shadow-sm text-[12px]">
+    <template v-if="!recordingAudio">
+      <template v-if="canRecord()">
+        <button @click="startRecording" class="p-0"><microphone-icon/></button>
       </template>
-      <template v-else>
-        <button @click="stopRecording"><x-icon/></button>
-        <button @click="sendAudioRecord"><player-stop-icon /></button>
-      </template>
-
-    <div class="absolute bottom-[100px] z-[100px] rounded-[5.5px] border-[1px] border-[var(--accent-color)] bg-[var(--background-color)] shadow-sm" v-if="showingPromptList()">
-        <div v-for="(prompt, index) in promptList" :key="prompt.name" @keydown="onKeydown"
-          :class="['flex flex-row p-[5px] cursor-pointer', index === selectedPromptIndex && 'bg-[var(--accent-color)] text-white']"
-          @click="e => usePrompt(index, e)" @mousedown="e => e.preventDefault()">{{ prompt.name }}
+      <TextArea
+        class="w-full resize-none overflow-hidden max-h-[60px] border-0 outline-0 self-center"
+        :placeholder="t('placeholder')" v-model="inputText" @keydown="onKeydown" focused
+        :cursor-position="inputPosition" />
+      <button @click="sendMessage" class="group send-button rounded-full aspect-square bg-[#754BDE] hover:bg-[#51349B] ml-[5px]">
+        <brand-telegram-icon color="white" class="group-hover:text-white"/>
+      </button>
+    </template>
+    <template v-else>
+        <button @click="sendAudioRecord" class="group rounded-full aspect-square border-solid border-[#F1406B] hover:border-[#912842] p-0 mr-[5px]">
+          <player-stop-filled-icon color="#F1406B" class="group-hover:text-[#912842]"/>
+        </button>
+        <div class="text-nowrap flex items-center">{{ t('recordingAudio') }}</div>
+        <div class="w-full flex items-center justify-center overflow-hidden ml-[5px]">
+          <div class="dot-floating" />
         </div>
+        <button @click="stopRecording">
+          <trash-x-icon />
+        </button>
+    </template>
+
+    <div
+      class="absolute bottom-[100px] z-[100px] rounded-[5.5px] border-[1px] border-[var(--accent-color)] bg-[var(--background-color)] shadow-sm"
+      v-if="showingPromptList()">
+      <div v-for="(prompt, index) in promptList" :key="prompt.name" @keydown="onKeydown"
+        :class="['flex flex-row p-[5px] cursor-pointer', index === selectedPromptIndex && 'bg-[var(--accent-color)] text-white']"
+        @click="e => usePrompt(index, e)" @mousedown="e => e.preventDefault()">{{ prompt.name }}
+      </div>
     </div>
   </div>
 </template>
 <i18n>
 {
   "en": {
-    "placeholder": "Type / to use a prompt, or type a message...",
-    "placeholderRecordingAudio": "Recording audio..."
+    "placeholder": "Type / to use a prompt, or type a message",
+    "recordingAudio": "Recording audio"
   },
   "es": {
-    "placeholder": "Usa / para usar un prompt, o escribe un mensaje...",
-    "placeholderRecordingAudio": "Grabando audio..."
+    "placeholder": "Usa / para usar un prompt, o escribe un mensaje",
+    "recordingAudio": "Grabando audio"
   }
 }
 </i18n>
 <style scoped>
-button > .icon-tabler:hover {
+.icon-tabler:hover {
   color: var(--accent-color);
 }
 </style>
