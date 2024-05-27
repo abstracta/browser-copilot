@@ -157,34 +157,36 @@ const loadPromptList = async () => {
 </script>
 
 <template>
-  <div class="flex flex-row rounded-[6px] p-[5px] border-[1px] border-[#754BDE] shadow-sm text-[12px]">
+  <div class="flex flex-row rounded-md p-1 border border-violet-600 shadow-sm text-xs">
     <template v-if="!recordingAudio">
       <template v-if="canRecord()">
-        <button @click="startRecording" class="p-0"><microphone-icon/></button>
+        <button @click="startRecording" class="p-0"><microphone-icon /></button>
       </template>
-      <TextArea
-        class="w-full resize-none overflow-hidden max-h-[60px] border-0 outline-0 self-center"
+      <TextArea class="w-full resize-none overflow-hidden max-h-16 border-0 outline-0 self-center"
         :placeholder="t('placeholder')" v-model="inputText" @keydown="onKeydown" focused
         :cursor-position="inputPosition" />
-      <button @click="sendMessage" class="group send-button rounded-full aspect-square bg-[#754BDE] hover:bg-[#51349B] ml-[5px]">
-        <brand-telegram-icon color="white" class="group-hover:text-white"/>
-      </button>
-    </template>
-    <template v-else>
-        <button @click="sendAudioRecord" class="group rounded-full aspect-square border-solid border-[#F1406B] hover:border-[#912842] p-0 mr-[5px]">
-          <player-stop-filled-icon color="#F1406B" class="group-hover:text-[#912842]"/>
+      <div class="flex items-center">
+        <button @click="sendMessage" class="group rounded-full aspect-square bg-violet-600 hover:bg-violet-800 ml-1">
+          <brand-telegram-icon color="white" class="group-hover:text-white" />
         </button>
-        <div class="text-nowrap flex items-center">{{ t('recordingAudio') }}</div>
-        <div class="w-full flex items-center justify-center overflow-hidden ml-[5px]">
-          <div class="dot-floating" />
-        </div>
-        <button @click="stopRecording">
-          <trash-x-icon />
-        </button>
+      </div>
     </template>
 
-    <div
-      class="absolute bottom-[100px] z-[100px] rounded-[5.5px] border-[1px] border-[var(--accent-color)] bg-[var(--background-color)] shadow-sm"
+    <template v-else>
+      <button @click="sendAudioRecord"
+        class="group rounded-full aspect-square border-solid p-0 border-red-500 hover:border-red-700 mr-1">
+        <player-stop-filled-icon class="text-red-500 group-hover:text-red-700" />
+      </button>
+      <div class="text-nowrap flex items-center">{{ t('recordingAudio') }}</div>
+      <div class="w-full flex items-center justify-center overflow-hidden ml-1">
+        <div class="dot-floating" />
+      </div>
+      <button @click="stopRecording">
+        <trash-x-icon />
+      </button>
+    </template>
+
+    <div class="absolute bottom-28 z-10 rounded-md border border-violet-600 bg-violet-600 shadow-md"
       v-if="showingPromptList()">
       <div v-for="(prompt, index) in promptList" :key="prompt.name" @keydown="onKeydown"
         :class="['flex flex-row p-[5px] cursor-pointer', index === selectedPromptIndex && 'bg-[var(--accent-color)] text-white']"

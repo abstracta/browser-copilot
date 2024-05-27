@@ -37,8 +37,8 @@ const lastMessage = computed((): ChatMessage => props.messages[props.messages.le
 <template>
   <PageOverlay>
     <template v-slot:headerContent>
-      <img :src="agentLogo" class="w-[25px] h-[25px]" />
-      <div class="text-[20px] font-semibold">
+      <img :src="agentLogo" class="w-7 h-7" />
+      <div class="text-xl font-semibold">
         <CopilotName :agentName="agentName" />
       </div>
     </template>
@@ -48,7 +48,7 @@ const lastMessage = computed((): ChatMessage => props.messages[props.messages.le
     </template>
     <template v-slot:content>
       <div class="h-full flex flex-col">
-        <div class="h-full flex flex-col overflow-y-auto mb-4 rounded-[var(--spacing)]" ref="messagesDiv">
+        <div class="h-full flex flex-col overflow-y-auto mb-4" ref="messagesDiv">
           <Message v-for="message in messages" :text="message.text" :file="message.file" :is-user="message.isUser"
             :is-complete="message.isComplete" :agent-logo="agentLogo" :agent-name="agentName" :agent-id="agentId" />
         </div>

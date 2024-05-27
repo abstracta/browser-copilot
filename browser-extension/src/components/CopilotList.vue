@@ -50,7 +50,7 @@ const onCopilotAdded = (agent: Agent) => {
 <template>
   <PageOverlay>
     <template v-slot:headerContent>
-      <div class="text-[20px] font-semibold">{{ t("title") }}</div>
+      <div class="text-xl font-semibold">{{ t("title") }}</div>
     </template>
     <template v-slot:headerActions>
       <BtnClose @click="$emit('close')" />
@@ -61,7 +61,7 @@ const onCopilotAdded = (agent: Agent) => {
       </div>
       <div v-for="(agent, index) in agents" :key="agent.manifest.id" class="flex flex-row py-3 ">
         <div class="flex flex-row flex-auto self-center items-center cursor-pointer" @click="$emit('activateAgent', agent.manifest.id)">
-          <img :src="agent.logo" class="w-[25px] h-[25px]" />
+          <img :src="agent.logo" class="w-7 h-7" />
           <div class="text-lg font-bold">
             <CopilotName :agent-name="agent.manifest.name" />
           </div>

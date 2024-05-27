@@ -176,9 +176,9 @@ const onAgentResponse = (text: string, complete: boolean, success: boolean) => {
 
 <template>
   <div
-    class="fixed flex flex-col left-[-10px] w-full h-[var(--sidebar-height)] justify-left m-[var(--spacing)] border-[.1px] border-slate-500 bg-[var(--background-color)] rounded-tl-[var(--top-round-corner)] rounded-bl-[var(--bottom-round-corner)]"
+    class="fixed flex flex-col -left-2 m-2 w-full h-[calc(100%_-_16px)] justify-left border border-gray-300 bg-white rounded-tl-3xl rounded-bl-3xl"
     id="sidebar">
-    <div class="absolute left-0 z-[1000] cursor-ew-resize w-[var(--spacing)] h-full" @mousedown="onStartResize" />
+    <div class="absolute left-0 z-auto cursor-ew-resize w-2 h-full" @mousedown="onStartResize" />
     <CopilotChat v-if="agent" :messages="messages" :agent-id="agent.manifest.id" :agent-name="agent.manifest.name"
       :agent-logo="agent.logo" :agent-capabilities="agent.manifest.capabilities || []" @userMessage="onUserMessage"
       @close="onCloseSidebar" />

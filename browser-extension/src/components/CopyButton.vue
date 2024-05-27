@@ -36,6 +36,6 @@ const copy = async () => {
   <!-- fixed width to avoid redimension of message text when chainging copy button status -->
   <button @click="copy">
     <copy-icon class="action-icon" v-if="!copied" />
-    <check-icon fade v-if="copied" style="color: var(--accent-color)" />
+    <check-icon fade v-if="copied" class="text-violet-600" />
   </button>
 </template>

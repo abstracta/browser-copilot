@@ -39,18 +39,9 @@ const onInput = async (e: Event) => {
     <label>{{ label }}</label>
     <TextArea :modelValue="modelValue" @input="onInput" :class="validationClass" :focused="focused" />
     <div v-if="validationMessage" :class="validationClass">{{ validationMessage }}</div>
-    <div class="instructions">
-      <slot name="instructions"></slot>
+    <div class="p-1 [&_code]:text-violet-600">
+      <slot name="instructions">
+      </slot>
     </div>
   </div>
 </template>
-
-<style>
-.instructions {
-  padding: var(--half-spacing);
-}
-
-.instructions code {
-  color: var(--accent-color);
-}
-</style>

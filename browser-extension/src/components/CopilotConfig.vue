@@ -65,7 +65,7 @@ const confirmPromptRemoval = async () => {
   <Modal :title="t('title', { agentName: agentName })" :show="show" @close="close">
     <NewPromptButton text="" :isLargeIcon="true" :agent-id="agentId" @save="onNewPrompt" />
       <div v-for="(prompt, index) in prompts" :key="prompt.name" class="flex flex-row">
-        <div class="flex-auto self-center cursor-pointer p-[5px]" @click="editingPrompt = prompt">{{ prompt.name }}</div>
+        <div class="flex-auto self-center cursor-pointer p-1" @click="editingPrompt = prompt">{{ prompt.name }}</div>
         <button @click="removePrompt(index)"><trash-x-icon class="action-icon" /></button>
       </div>
   </Modal>
@@ -81,7 +81,7 @@ const confirmPromptRemoval = async () => {
 {
   "en": {
     "title": "{agentName} config",
-    "deleteConfiguration": "Are you sure you want to delete the prompt {promptName}?"
+    "deleteConfirmation": "Are you sure you want to delete the prompt {promptName}?"
   },
   "es": {
     "title": "Configuración de {agentName}",

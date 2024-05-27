@@ -26,16 +26,16 @@ const renderedMsg = computed(() => props.isUser ? props.text.replaceAll("\n", "<
 </script>
 
 <template>
-  <div class="flex flex-col relative text-[14px] mb-[5px] rounded-[20px] p-[5px] min-w-[25px]">
+  <div class="flex flex-col mb-1 p-1 min-w-7">
     <div class="flex items-center flex-row">
-      <img :src="isUser ? YouDot : agentLogo" class="w-[20px] mr-1 rounded-full" />
-      <span class="text-[15px]">{{ isUser ? t('you') : agentName }}</span>
+      <img :src="isUser ? YouDot : agentLogo" class="w-5 mr-1 rounded-full" />
+      <span class="text-base">{{ isUser ? t('you') : agentName }}</span>
       <div class="flex-auto flex justify-end">
         <CopyButton v-if="!isUser && text" :text="text" :html="renderedMsg" />
         <NewPromptButton v-if="isUser && text" :is-large-icon="false" :text="text" :agent-id="agentId" />
       </div>
     </div>
-    <div class="mt-[10px] ml-[30px]">
+    <div class="mt-2 ml-8">
       <div>
         <template v-if="file.data">
           <audio controls>
@@ -43,10 +43,10 @@ const renderedMsg = computed(() => props.isUser ? props.text.replaceAll("\n", "<
           </audio>
         </template>
         <template v-if="text">
-          <div v-html="renderedMsg" class="flex flex-col font-light text-[15px] leading-tight gap-[15px]" id="rendered-msg"/>
+          <div v-html="renderedMsg" class="flex flex-col text-sm font-light leading-tight gap-4" id="rendered-msg"/>
         </template>
       </div>
-      <div class="ml-[10px] dot-pulse" v-if="!isComplete" />
+      <div class="ml-3 dot-pulse" v-if="!isComplete" />
     </div>
   </div>
 </template>
@@ -57,7 +57,7 @@ const renderedMsg = computed(() => props.isUser ? props.text.replaceAll("\n", "<
 
 pre {
   padding: 15px;
-  background: var(--code-background-color);
+  background: #202126;
   border-radius: 8px;
   text-wrap: wrap;
 }

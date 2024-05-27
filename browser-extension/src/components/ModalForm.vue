@@ -22,42 +22,36 @@ const onSave = () => {
 </script>
 
 <template>
-  <Modal :show="show" :title="title" @close="onClose">
-    <div class="flex flex-col gap-[var(--spacing)] my-[var(--spacing)] modal-form">
-      <slot />
+  <Modal :show="show" :title="title" @close="onClose" class="group">
+    <div class="flex flex-col gap-2 my-1 modal-form *:flex *:flex-col">
+      <slot/>
     </div>
-    <button class="bg-[var(--accent-color)] text-white rounded-[4px] w-full h-[32px] hover:text-white hover:bg-[var(--light-accent-color)]" @click="onSave">{{ buttonText }}</button>
+    <button class="bg-violet-600 text-white rounded-md w-full h-8 hover:text-white hover:bg-violet-800" @click="onSave">{{ buttonText }}</button>
   </Modal>
 </template>
 
 <style>
-.modal-form div {
-  display: flex;
-  flex-direction: column;
-}
 
 .modal-form label {
   font-weight: bold;
-  font-size: 14px;
 }
 
 .modal-form textarea,
 .modal-form input {
-  font-family: inherit;
   resize: none;
-  outline-color: var(--focus-color);
+  outline-color: #3d363e;
   border: var(--border);
   border-radius: var(--spacing);
   padding: var(--half-spacing)
 }
 
 .modal-form .warning {
-  color: var(--warning-color);
-  outline-color: var(--warning-color);
+  color: orange;
+  outline-color: orange;
 }
 
 .modal-form .error {
-  color: var(--error-color);
-  outline-color: var(--error-color);
+  color: red;
+  outline-color: red;
 }
 </style>

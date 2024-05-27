@@ -21,28 +21,11 @@
 
 html,
 body {
-  font-family: "Sora";
-  --white-color: #fff;
-  --background-color: var(--white-color);
-  --shadow: 0 var(--half-spacing) var(--spacing) rgba(0, 0, 0, 0.33);
   --border: 1px solid #ccc;
-  --dark-color: #3d363e;
-  --gray-color: #acacac;
-  --code-background-color: #202126;
-  --modal-overlay-background-color: rgba(0, 0, 0, 0.2);
-  --action-icon-color: var(--gray-color);
-  --light-accent-color: #6f37fd;
+  font-family: "Sora";
   --accent-color: rgb(117, 75, 222);
-  --warning-color: orange;
-  --error-color: red;
-  --title-color: #3d363e;
-  --focus-color: var(--title-color);
   --spacing: 10px;
   --half-spacing: 5px;
-  --content-space: 20px;
-  --top-round-corner: 24px;
-  --bottom-round-corner: 24px;
-  --sidebar-height: calc(100% - var(--content-space));
 }
 
 ul {
@@ -93,7 +76,7 @@ img {
 .action-icon {
   width: 20px;
   height: 20px;
-  color: var(--action-icon-color);
+  color: #acacac;
 }
 
 .action-icon:hover {
