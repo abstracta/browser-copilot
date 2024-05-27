@@ -1,16 +1,16 @@
 <script lang="ts" setup>
 import { ref, onBeforeMount, onBeforeUnmount, toRaw } from 'vue'
-import browser from "webextension-polyfill"
-import { useToast } from "vue-toastification"
+import browser from 'webextension-polyfill'
+import { useToast } from 'vue-toastification'
 import { useI18n } from 'vue-i18n'
-import { BrowserMessage, ActiveTabListener, ToggleSidebar, ActivateAgent, AgentActivation, InteractionSummary, ResizeSidebar } from "../scripts/browser-message"
-import { Agent } from "../scripts/agent"
-import { TabState, ChatMessage } from "../scripts/tab-state"
-import { findTabState, saveTabState } from "../scripts/tab-state-repository"
+import { BrowserMessage, ActiveTabListener, ToggleSidebar, ActivateAgent, AgentActivation, InteractionSummary, ResizeSidebar } from '../scripts/browser-message'
+import { Agent } from '../scripts/agent'
+import { TabState, ChatMessage } from '../scripts/tab-state'
+import { findTabState, saveTabState } from '../scripts/tab-state-repository'
 import { findAgentSession } from '../scripts/agent-session-repository'
-import CopilotChat from "../components/CopilotChat.vue"
-import CopilotList from "../components/CopilotList.vue"
-import ToastMessage from "../components/ToastMessage.vue"
+import CopilotChat from '../components/CopilotChat.vue'
+import CopilotList from '../components/CopilotList.vue'
+import ToastMessage from '../components/ToastMessage.vue'
 
 const toast = useToast()
 const { t } = useI18n()
@@ -98,9 +98,9 @@ const getCurrentTabId = async (): Promise<number> => {
 
 const onStartResize = (e: MouseEvent) => {
   lastResizePos = e.screenX
-  window.document.body.className = "resizing"
-  window.addEventListener("mousemove", onResize)
-  window.addEventListener("mouseup", onEndResize)
+  window.document.body.className = 'resizing'
+  window.addEventListener('mousemove', onResize)
+  window.addEventListener('mouseup', onEndResize)
 }
 
 const onResize = async (e: MouseEvent) => {
@@ -115,9 +115,9 @@ const onResize = async (e: MouseEvent) => {
 }
 
 const onEndResize = () => {
-  window.document.body.className = ""
-  window.removeEventListener("mousemove", onResize)
-  window.removeEventListener("mouseup", onEndResize)
+  window.document.body.className = ''
+  window.removeEventListener('mousemove', onResize)
+  window.removeEventListener('mouseup', onEndResize)
 }
 
 const onCloseSidebar = () => {
@@ -144,7 +144,7 @@ const onAgentActivation = (msg: AgentActivation) => {
 }
 
 const onInteractionSummary = (msg: InteractionSummary) => {
-  let text = msg.text ? msg.text : t("interactionSummaryError", { contactEmail: agent.value!.manifest.contactEmail })
+  let text = msg.text ? msg.text : t('interactionSummaryError', { contactEmail: agent.value!.manifest.contactEmail })
   let lastMessage = messages.value[messages.value.length - 1]
   let messagePosition = lastMessage.isComplete ? messages.value.length : messages.value.length - 1
   messages.value.splice(messagePosition, 0, ChatMessage.agentMessage(text))
@@ -160,12 +160,13 @@ const onUserMessage = async (text: string, file: Record<string, string>) => {
 const onAgentResponse = (text: string, complete: boolean, success: boolean) => {
   let lastMessage = messages.value[messages.value.length - 1]
   if (!success) {
-    text = text ? text : t("agentAnswerError", { contactEmail: agent.value!.manifest.contactEmail })
+    text = text ? text : t('agentAnswerError', { contactEmail: agent.value!.manifest.contactEmail })
     lastMessage.isComplete = true
     if (!lastMessage.text) {
       lastMessage.text += text
+      lastMessage.isSuccess = false
     } else {
-      messages.value.push(ChatMessage.agentMessage(text))
+      messages.value.push(ChatMessage.agentErrorMessage(text))
     }
   } else {
     lastMessage.isComplete = complete

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { nextTick, onMounted, onUpdated, ref } from 'vue';
+import { nextTick, onMounted, onUpdated, ref } from 'vue'
 
 const emit = defineEmits<{
   (e: 'keydown', event: KeyboardEvent): void,

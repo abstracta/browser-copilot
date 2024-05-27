@@ -1,18 +1,19 @@
 <script lang="ts" setup>
-import { onBeforeMount, ref } from "vue"
-import { useI18n } from "vue-i18n"
-import { findAllAgents, removeAgent } from "../scripts/agent-repository"
-import { removeAgentPrompts } from "../scripts/prompt-repository"
-import { Agent } from "../scripts/agent"
-import ModalForm from "./ModalForm.vue"
-import CopilotConfig from "./CopilotConfig.vue"
-import AddCopilotModal from "./AddCopilotModal.vue"
-import CopilotName from "./CopilotName.vue"
-import PageOverlay from "./PageOverlay.vue"
-import BtnClose from "./BtnClose.vue"
+import { onBeforeMount, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { CirclePlusIcon, SettingsIcon, TrashXIcon } from 'vue-tabler-icons'
+import { findAllAgents, removeAgent } from '../scripts/agent-repository'
+import { removeAgentPrompts } from '../scripts/prompt-repository'
+import { Agent } from '../scripts/agent'
+import ModalForm from './ModalForm.vue'
+import CopilotConfig from './CopilotConfig.vue'
+import AddCopilotModal from './AddCopilotModal.vue'
+import CopilotName from './CopilotName.vue'
+import PageOverlay from './PageOverlay.vue'
+import BtnClose from './BtnClose.vue'
 const emit = defineEmits<{
-  (e: "close"): void
-  (e: "activateAgent", agentId: string): void
+  (e: 'close'): void
+  (e: 'activateAgent', agentId: string): void
 }>();
 const { t } = useI18n()
 const agents = ref<Agent[]>()
@@ -50,14 +51,14 @@ const onCopilotAdded = (agent: Agent) => {
 <template>
   <PageOverlay>
     <template v-slot:headerContent>
-      <div class="text-xl font-semibold">{{ t("title") }}</div>
+      <div class="text-xl font-semibold">{{ t('title') }}</div>
     </template>
     <template v-slot:headerActions>
       <BtnClose @click="$emit('close')" />
     </template>
     <template v-slot:content>
       <div class="flex flex-row py-3">
-        <div class="flex items-center text-base cursor-pointer" @click="showAddCopilot = true"><circle-plus-icon />{{ t("addTitle") }}</div>
+        <div class="flex items-center text-base cursor-pointer" @click="showAddCopilot = true"><circle-plus-icon />{{ t('addTitle') }}</div>
       </div>
       <div v-for="(agent, index) in agents" :key="agent.manifest.id" class="flex flex-row py-3 ">
         <div class="flex flex-row flex-auto self-center items-center cursor-pointer" @click="$emit('activateAgent', agent.manifest.id)">
@@ -77,8 +78,8 @@ const onCopilotAdded = (agent: Agent) => {
     <template v-slot:modalsContainer>
       <ModalForm :title="t('removeTitle')" :show="deletingIndex >= 0" @close="closeDeletionConfirmation" @save="confirmRemoval" :button-text="t('removeButton')">
         {{
-          t("removeConfirmation", {
-            agentName: agents ? agents[deletingIndex].manifest.name : ""
+          t('removeConfirmation', {
+            agentName: agents ? agents[deletingIndex].manifest.name : ''
           })
         }}
       </ModalForm>

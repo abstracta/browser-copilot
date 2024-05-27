@@ -25,7 +25,7 @@ const save = async () => {
     emit('saved', agent)
   } catch (e: any) {
     console.error(`There was a problem adding agent from ${url.value}`, e)
-    validation.value = ValidationResult.error(t(e instanceof ExistingAgentError ? "existingAgentError" : "agentAddError"))
+    validation.value = ValidationResult.error(t(e instanceof ExistingAgentError ? 'existingAgentError' : 'agentAddError'))
   }
 }
 

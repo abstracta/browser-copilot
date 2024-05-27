@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ref, watch, onBeforeMount } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { TrashXIcon } from 'vue-tabler-icons'
 import { getPrompts, Prompt, deletePrompt, savePrompt } from '../scripts/prompt-repository'
 import Modal from './Modal.vue'
 import ModalForm from './ModalForm.vue'

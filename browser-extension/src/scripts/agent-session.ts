@@ -1,6 +1,6 @@
 import browser from "webextension-polyfill"
-import { Agent, AgentRuleCondition, AddHeaderRuleAction, RecordInteractionRuleAction } from './agent'
-import { AuthService } from './auth'
+import { Agent, AgentRuleCondition, AddHeaderRuleAction, RecordInteractionRuleAction } from "./agent"
+import { AuthService } from "./auth"
 import { HttpServiceError, fetchJson } from "./http"
 
 export class AgentSession {

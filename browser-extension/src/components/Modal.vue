@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { XIcon } from 'vue-tabler-icons'
+
 defineProps<{ show: boolean, title: string, icon?: string }>()
 
 </script>

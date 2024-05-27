@@ -23,23 +23,29 @@ export class ChatMessage {
   file: Record<string, string>
   isUser: boolean
   isComplete: boolean
+  isSuccess: boolean
 
-  constructor(text: string, file: Record<string, string>, isUser: boolean, isComplete: boolean) {
+  constructor(text: string, file: Record<string, string>, isUser: boolean, isComplete: boolean, isSuccess: boolean) {
     this.text = text
     this.file = file
     this.isUser = isUser
     this.isComplete = isComplete
+    this.isSuccess = isSuccess
   }
 
   public static userMessage(text: string, file: Record<string, string>): ChatMessage {
-    return new ChatMessage(text, file, true, true)
+    return new ChatMessage(text, file, true, true, true)
   }
 
   public static agentMessage(text?: string): ChatMessage {
-    return new ChatMessage(text || '', {}, false, text !== undefined)
+    return new ChatMessage(text || '', {}, false, text !== undefined, true)
+  }
+
+  public static agentErrorMessage(text: string): ChatMessage {
+    return new ChatMessage(text || '', {}, false, true, false)
   }
 
   public static fromJsonObject(obj: any): ChatMessage {
-    return new ChatMessage(obj.text, obj.file, obj.isUser, obj.isComplete)
+    return new ChatMessage(obj.text, obj.file, obj.isUser, obj.isComplete, obj.isSuccess)
   }
 }

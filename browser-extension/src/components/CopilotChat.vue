@@ -1,11 +1,12 @@
 <script lang="ts" setup>
 import { ref, nextTick, watch, computed } from 'vue'
+import { SettingsIcon } from 'vue-tabler-icons'
 import { ChatMessage } from '../scripts/tab-state'
-import CopilotName from "./CopilotName.vue"
-import Message from "./Message.vue"
-import ChatInput from "./ChatInput.vue"
-import CopilotConfig from "./CopilotConfig.vue"
-import PageOverlay from "./PageOverlay.vue"
+import CopilotName from './CopilotName.vue'
+import Message from './Message.vue'
+import ChatInput from './ChatInput.vue'
+import CopilotConfig from './CopilotConfig.vue'
+import PageOverlay from './PageOverlay.vue'
 import BtnClose from './BtnClose.vue'
 
 const props = defineProps<{ agentId: string, agentName: string, agentLogo: string, agentCapabilities: string[], messages: ChatMessage[] }>()
@@ -50,7 +51,7 @@ const lastMessage = computed((): ChatMessage => props.messages[props.messages.le
       <div class="h-full flex flex-col">
         <div class="h-full flex flex-col overflow-y-auto mb-4" ref="messagesDiv">
           <Message v-for="message in messages" :text="message.text" :file="message.file" :is-user="message.isUser"
-            :is-complete="message.isComplete" :agent-logo="agentLogo" :agent-name="agentName" :agent-id="agentId" />
+            :is-complete="message.isComplete" :is-success="message.isSuccess" :agent-logo="agentLogo" :agent-name="agentName" :agent-id="agentId" />
         </div>
         <ChatInput :can-send-message="lastMessage.isComplete" :agent-id="agentId"
           :support-recording="agentCapabilities.includes('transcripts')" @send-message="onUserMessage" />

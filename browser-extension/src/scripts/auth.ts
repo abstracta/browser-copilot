@@ -1,4 +1,4 @@
-import { Log, AsyncStorage, INavigator, IWindow, NavigateParams, NavigateResponse, UserManager, WebStorageStateStore, UserManagerSettings, User } from 'oidc-client-ts'
+import { Log, AsyncStorage, INavigator, IWindow, NavigateParams, NavigateResponse, UserManager, WebStorageStateStore, UserManagerSettings, User } from "oidc-client-ts"
 import browser from "webextension-polyfill"
 
 Log.setLogger(console)

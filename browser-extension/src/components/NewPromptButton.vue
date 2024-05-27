@@ -1,7 +1,8 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
+import { CirclePlusIcon } from 'vue-tabler-icons'
 import { savePrompt, Prompt } from '../scripts/prompt-repository'
-import PromptEditor from "./PromptEditor.vue"
+import PromptEditor from './PromptEditor.vue'
 
 const props = defineProps<{ text: string, agentId: string, isLargeIcon: boolean }>()
 const emit = defineEmits(['save', 'close'])
@@ -10,12 +11,12 @@ const showModal = ref(false)
 const onSaved = async (prompt: Prompt) => {
   await savePrompt(prompt, props.agentId)
   close()
-  emit("save")
+  emit('save')
 }
 
 const close = () => {
   showModal.value = false
-  emit("close")
+  emit('close')
 }
 </script>
 

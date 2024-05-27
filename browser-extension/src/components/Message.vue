@@ -4,11 +4,11 @@ import { useI18n } from 'vue-i18n'
 import MarkdownIt from 'markdown-it'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/base16/gigavolt.min.css'
-import YouDot from "../assets/img/you.svg"
-import NewPromptButton from "./NewPromptButton.vue"
-import CopyButton from "./CopyButton.vue"
+import { ExclamationCircleIcon, CircleFilledIcon } from 'vue-tabler-icons'
+import NewPromptButton from './NewPromptButton.vue'
+import CopyButton from './CopyButton.vue'
 
-const props = defineProps<{ text: string, file: Record<string, string>, isUser: boolean, isComplete: boolean, agentLogo: string, agentName: string, agentId: string }>()
+const props = defineProps<{ text: string, file: Record<string, string>, isUser: boolean, isComplete: boolean, isSuccess: boolean, agentLogo: string, agentName: string, agentId: string }>()
 const { t } = useI18n()
 const md = new MarkdownIt({
   highlight: (code: string, lang: string) => {
@@ -21,14 +21,23 @@ const md = new MarkdownIt({
     return '<pre><code class="hljs">' + ret + '</code></pre>'
   }
 })
-const renderedMsg = computed(() => props.isUser ? props.text.replaceAll("\n", "<br/>") : md.render(props.text))
+const renderedMsg = computed(() => props.isUser ? props.text.replaceAll('\n', '<br/>') : md.render(props.text))
 
 </script>
 
 <template>
-  <div class="flex flex-col mb-1 p-1 min-w-7">
+  <div class="flex flex-col mb-1 p-1 min-w-7" :class=" !isSuccess ? ['border-red-500', 'border-b']: []">
     <div class="flex items-center flex-row">
-      <img :src="isUser ? YouDot : agentLogo" class="w-5 mr-1 rounded-full" />
+      <template v-if="isUser">
+        <circle-filled-icon class="text-violet-600"/>
+      </template>
+      <template v-else-if="!isUser && isSuccess">
+        <img :src="agentLogo" class="w-5 mr-1 rounded-full" />
+      </template>
+      <template v-else>
+        <exclamation-circle-icon class="text-red-600"/>
+      </template>
+      
       <span class="text-base">{{ isUser ? t('you') : agentName }}</span>
       <div class="flex-auto flex justify-end">
         <CopyButton v-if="!isUser && text" :text="text" :html="renderedMsg" />

@@ -1,26 +1,28 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref } from 'vue'
+import { CopyIcon, CheckIcon } from 'vue-tabler-icons'
+
 
 const props = defineProps<{ text: string, html: string }>()
 const copied = ref<boolean>(false)
 
 const copyToClipboard = async (text: string, html: string) => {
-  if (navigator && "clipboard" in navigator) {
-    const plainMime = "text/plain"
-    const htmlMime = "text/html"
+  if (navigator && 'clipboard' in navigator) {
+    const plainMime = 'text/plain'
+    const htmlMime = 'text/html'
     const data = [new ClipboardItem({
       [htmlMime]: new Blob([html], { type: htmlMime }),
       [plainMime]: new Blob([text], { type: plainMime }),
     })];
     await navigator.clipboard.write(data)
   } else {
-    let tmp = document.createElement("textarea")
+    let tmp = document.createElement('textarea')
     tmp.value = text
-    tmp.style.position = "absolute"
-    tmp.style.visibility = "hidden"
+    tmp.style.position = 'absolute'
+    tmp.style.visibility = 'hidden'
     document.body.appendChild(tmp)
     tmp.select()
-    document.execCommand("copy")
+    document.execCommand('copy')
     tmp.remove()
   }
 }

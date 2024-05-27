@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { MicrophoneIcon, BrandTelegramIcon, PlayerStopFilledIcon, TrashXIcon } from 'vue-tabler-icons'
 import { getPrompts, Prompt } from '../scripts/prompt-repository'
 import TextArea from './TextArea.vue'
 
@@ -29,7 +30,7 @@ const sendMessage = () => {
     return
   }
   if (inputText.value.trim() !== '') {
-    emit("sendMessage", inputText.value, {})
+    emit('sendMessage', inputText.value, {})
     inputText.value = ''
   }
 }
@@ -96,7 +97,7 @@ const sendAudioRecord = () => {
     const audioObjectUrl = URL.createObjectURL(audioBlob);
     blobToBase64(audioBlob).then(result => {
       const base64WithoutTags = (result as string).substr((result as string).indexOf(',') + 1);
-      emit("sendMessage", "", { data: base64WithoutTags, url: audioObjectUrl })
+      emit('sendMessage', '', { data: base64WithoutTags, url: audioObjectUrl })
     })
     recordingChunks = []
   }
@@ -106,18 +107,18 @@ const sendAudioRecord = () => {
 const onKeydown = async (e: KeyboardEvent) => {
   inputPosition.value = undefined
   if (showingPromptList()) {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       usePrompt(selectedPromptIndex.value, e)
-    } else if (e.key === "Escape") {
+    } else if (e.key === 'Escape') {
       clearPromptList()
-    } else if (e.key === "ArrowUp" && selectedPromptIndex.value > 0) {
+    } else if (e.key === 'ArrowUp' && selectedPromptIndex.value > 0) {
       e.preventDefault()
       selectedPromptIndex.value--
-    } else if (e.key === "ArrowDown" && selectedPromptIndex.value < promptList.value.length - 1) {
+    } else if (e.key === 'ArrowDown' && selectedPromptIndex.value < promptList.value.length - 1) {
       e.preventDefault()
       selectedPromptIndex.value++
     }
-  } else if (e.key === "Enter" && !e.shiftKey) {
+  } else if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault()
     sendMessage()
   }
@@ -144,7 +145,7 @@ const clearPromptList = () => {
 }
 
 watch(inputText, async () => {
-  if (!inputText.value.startsWith("/")) {
+  if (!inputText.value.startsWith('/')) {
     clearPromptList()
   } else {
     await loadPromptList()
