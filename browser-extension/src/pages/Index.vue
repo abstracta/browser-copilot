@@ -2,6 +2,7 @@
 import { ref, onBeforeMount, onBeforeUnmount, toRaw } from 'vue'
 import browser from 'webextension-polyfill'
 import { useToast } from 'vue-toastification'
+import { AlertCircleFilledIcon } from 'vue-tabler-icons'
 import { useI18n } from 'vue-i18n'
 import { BrowserMessage, ActiveTabListener, ToggleSidebar, ActivateAgent, AgentActivation, InteractionSummary, ResizeSidebar } from '../scripts/browser-message'
 import { Agent } from '../scripts/agent'
@@ -136,7 +137,7 @@ const onAgentActivation = (msg: AgentActivation) => {
   }
   if (!msg.success) {
     let text = t('activationError', { agentName: msg.agent.manifest.name, contactEmail: msg.agent.manifest.contactEmail })
-    toast.error({ component: ToastMessage, props: { message: text } })
+    toast.error({ component: ToastMessage, props: { message: text } }, { icon: AlertCircleFilledIcon })
   } else {
     agent.value = Agent.fromJsonObject(msg.agent)
     messages.value.push(ChatMessage.agentMessage(agent.value.manifest.welcomeMessage))
@@ -207,7 +208,7 @@ const onAgentResponse = (text: string, complete: boolean, success: boolean) => {
 <i18n>
 {
   "en": {
-    "activationError": "Cound not activate {agentName} Copilot. You can try again and if the issue persists then contact [{agentName} Copilot support](mailto:{contactEmail}?subject=Activation%20issue)",
+    "activationError": "Could not activate {agentName} Copilot. You can try again and if the issue persists then contact [{agentName} Copilot support](mailto:{contactEmail}?subject=Activation%20issue)",
     "interactionSummaryError": "I could not process some information from the current site. This might impact the information and answers I provide. If the issue persists please contact [support](mailto:{contactEmail}?subject=Interaction%20issue)",
     "agentAnswerError": "I am currently unable to complete your request. You can try again and if the issue persists contact [support](mailto:{contactEmail}?subject=Question%20issue)"
   },
