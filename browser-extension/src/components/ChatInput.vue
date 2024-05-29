@@ -187,10 +187,10 @@ const loadPromptList = async () => {
       </button>
     </template>
 
-    <div class="absolute bottom-28 z-10 rounded-md border border-violet-600 bg-violet-600 shadow-md"
+    <div class="absolute bottom-28 z-10 rounded-md border border-violet-600 bg-white shadow-md"
       v-if="showingPromptList()">
       <div v-for="(prompt, index) in promptList" :key="prompt.name" @keydown="onKeydown"
-        :class="['flex flex-row p-[5px] cursor-pointer', index === selectedPromptIndex && 'bg-[var(--accent-color)] text-white']"
+        :class="['flex flex-row p-[5px] cursor-pointer', index === selectedPromptIndex && 'bg-violet-600 text-white']"
         @click="e => usePrompt(index, e)" @mousedown="e => e.preventDefault()">{{ prompt.name }}
       </div>
     </div>
