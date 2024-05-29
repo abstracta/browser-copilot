@@ -1,4 +1,4 @@
-<script setup>
+<script lang="ts" setup>
     import { XIcon } from 'vue-tabler-icons'
 </script>
 <template>
