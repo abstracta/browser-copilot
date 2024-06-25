@@ -8,20 +8,35 @@ import { ExclamationCircleIcon, CircleFilledIcon } from 'vue-tabler-icons'
 import NewPromptButton from './NewPromptButton.vue'
 import CopyButton from './CopyButton.vue'
 
+const useTargetBlankLinks = (md: MarkdownIt) => {
+  let defaultRender = md.renderer.rules.link_open || function (tokens, idx, options, env, self) {
+    return self.renderToken(tokens, idx, options)
+  }
+  md.renderer.rules.link_open = function (tokens, idx, options, env, self) {
+    tokens[idx].attrSet('target', '_blank')
+    return defaultRender(tokens, idx, options, env, self)
+  }
+}
+
+const renderMarkDown = (text: string) => {
+  let md = new MarkdownIt({
+    highlight: (code: string, lang: string) => {
+      let ret = code
+      if (lang && hljs.getLanguage(lang)) {
+        try {
+          ret = hljs.highlight(code, { language: lang }).value
+        } catch (__) { }
+      }
+      return '<pre><code class="hljs">' + ret + '</code></pre>'
+    }
+  })
+  useTargetBlankLinks(md)
+  return md.render(text)
+}
+
 const props = defineProps<{ text: string, file: Record<string, string>, isUser: boolean, isComplete: boolean, isSuccess: boolean, agentLogo: string, agentName: string, agentId: string }>()
 const { t } = useI18n()
-const md = new MarkdownIt({
-  highlight: (code: string, lang: string) => {
-    let ret = code
-    if (lang && hljs.getLanguage(lang)) {
-      try {
-        ret = hljs.highlight(code, { language: lang }).value
-      } catch (__) { }
-    }
-    return '<pre><code class="hljs">' + ret + '</code></pre>'
-  }
-})
-const renderedMsg = computed(() => props.isUser ? props.text.replaceAll('\n', '<br/>') : md.render(props.text))
+const renderedMsg = computed(() => props.isUser ? props.text.replaceAll('\n', '<br/>') : renderMarkDown(props.text))
 
 </script>
 

@@ -47,7 +47,7 @@ watch(url, () => {
     "title": "Add Copilot",
     "saveButton": "Add",
     "existingAgentError": "You have already added a copilot with same ID. You should remove it or verify if your new copilot needs to change its ID in manifest.json",
-    "agentAddError": "Could not add the copilot. Verify that you can get the manifest.json from the provided URL and that it has proper formant"
+    "agentAddError": "Could not add the copilot. Verify that you can get the manifest.json from the provided URL and that it has proper format"
   },
   "es": {
     "title": "Agregar Copiloto",
