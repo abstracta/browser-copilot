@@ -2,7 +2,7 @@
   "name": "browser-copilot",
   "description": "Harness existing or custom AI assistants to streamline your everyday web application tasks",
   "private": true,
-  "version": "0.7.4",
+  "version": "0.8",
   "type": "module",
   "scripts": {
     "dev": "vite",
