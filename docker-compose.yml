@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   agent:
-    build: agent
+    build: agent-extended
     ports:
       - "8000:8000"
     environment:
