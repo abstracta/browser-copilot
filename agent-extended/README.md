@@ -139,10 +139,10 @@ and answers with an answer like this one:
 
 #### Microsoft Entra ID
 
-1. Register the Chrome extension in Azure as described [here](https://learn.microsoft.com/en-us/azure/architecture/guide/resilience/azure-ad-secure-single-page-application#register-your-application-in-azure).
+1. Register the Chrome extension in Azure as described [here](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app).
    E.g.: use `browser-copilot` as the name and `https://nnllgflhcpaigpehhmbdhpjpakmofemh.chromiumapp.org/` as the redirect URI (check the proper ID for the Chrome extension by accessing manage extension in Chrome.)
    Remember to enable user assignment and assign users that should be able to access the copilot.
-2. Register the backend agent (API) for the copilot in Azure as described [here](https://learn.microsoft.com/en-us/azure/architecture/guide/resilience/azure-ad-secure-single-page-application#expose-the-api).
+2. Register the backend agent (API) for the copilot in Azure as described [here](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-configure-app-expose-web-apis) and [here](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-configure-app-access-web-apis).
    E.g.: using `gpt-copilot` as the name
    Remember to expose the API and add a scope (E.g.: `Chat`).
    Also, remember to add the API to the extension (`browser-copilot`) app registration.
