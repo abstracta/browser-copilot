@@ -40,6 +40,9 @@ devDependencies:
   '@types/markdown-it':
     specifier: ^13.0.8
     version: 13.0.8
+  '@types/markdown-it-plantuml':
+    specifier: ^1.4.5
+    version: 1.4.5
   '@types/webextension-polyfill':
     specifier: ^0.10.7
     version: 0.10.7
@@ -616,6 +619,12 @@ packages:
 
   /@types/linkify-it@3.0.5:
     resolution: {integrity: sha512-yg6E+u0/+Zjva+buc3EIb+29XEg4wltq7cSmd4Uc2EE/1nUVmxyzpX6gUXD0V8jIrG0r7YeOGVIbYRkxeooCtw==}
+    dev: true
+
+  /@types/markdown-it-plantuml@1.4.5:
+    resolution: {integrity: sha512-QTEJOz9UJSJhLNTYXbjg3p/MsEY3TIgzVH3r1zf/tfXOclf/E2lmP8ZXOkv7RdD4agnMROO4h/3IFWCElEvR8A==}
+    dependencies:
+      '@types/markdown-it': 13.0.8
     dev: true
 
   /@types/markdown-it@13.0.8:
