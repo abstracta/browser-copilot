@@ -8,6 +8,9 @@ dependencies:
   autoprefixer:
     specifier: ^10.4.19
     version: 10.4.19(postcss@8.4.38)
+  markdown-it-plantuml:
+    specifier: ^1.4.1
+    version: 1.4.1
   oidc-client-ts:
     specifier: ^3.0.1
     version: 3.0.1
@@ -2712,6 +2715,10 @@ packages:
     dependencies:
       p-defer: 1.0.0
     dev: true
+
+  /markdown-it-plantuml@1.4.1:
+    resolution: {integrity: sha512-13KgnZaGYTHBp4iUmGofzZSBz+Zj6cyqfR0SXUIc9wgWTto5Xhn7NjaXYxY0z7uBeTUMlc9LMQq5uP4OM5xCHg==}
+    dev: false
 
   /markdown-it@13.0.2:
     resolution: {integrity: sha512-FtwnEuuK+2yVU7goGn/MJ0WBZMM9ZPgU9spqlFs7/A/pDIUNSOQZhUgOqYCficIuR2QaFnrt8LHqBWsbTAoI5w==}

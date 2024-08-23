@@ -26,6 +26,7 @@ body {
   --accent-color: rgb(117, 75, 222);
   --spacing: 10px;
   --half-spacing: 5px;
+  --shadow: 0 0 var(--half-spacing) rgba(0, 0, 0, 0.50);
 }
 
 ul {

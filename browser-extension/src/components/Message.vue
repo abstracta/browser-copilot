@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import MarkdownIt from 'markdown-it'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/base16/gigavolt.min.css'
+import MarkdownItPlantuml from 'markdown-it-plantuml'
 import { ExclamationCircleIcon, CircleFilledIcon } from 'vue-tabler-icons'
 import NewPromptButton from './NewPromptButton.vue'
 import CopyButton from './CopyButton.vue'
@@ -45,6 +46,7 @@ const renderMarkDown = (text: string) => {
   })
   useTargetBlankLinks(md)
   useTableWrapperDivs(md)
+  md.use(MarkdownItPlantuml)
   return md.render(text)
 }
 
@@ -93,7 +95,7 @@ const renderedMsg = computed(() => props.isUser ? props.text.replaceAll('\n', '<
   $dot-height: 5px,
   $dot-color: var(--accent-color));
 
-pre {
+#rendered-msg pre {
   padding: 15px;
   background: #202126;
   border-radius: 8px;
@@ -105,11 +107,11 @@ pre {
   margin-bottom: 10px;
 }
 
-pre {
-  box-shadow: 0 0 var(--half-spacing) rgba(0, 0, 0, 0.50);
+#rendered-msg pre {
+  box-shadow: var(--shadow);
 }
 
-pre code.hljs {
+#rendered-msg pre code.hljs {
   padding: 0px;
 }
 
@@ -121,44 +123,49 @@ div a {
 .table-wrapper {
   border-radius: var(--spacing);
   overflow: hidden;
-  border: var(--border);
-  box-shadow: 0 0 var(--half-spacing) rgba(0, 0, 0, 0.20);
+  box-shadow: var(--shadow);
 }
 
-table {
+.table-wrapper table {
   width: 100%;
 }
 
-table thead tr {
+.table-wrapper thead tr {
   background-color: #ece6f5;
 }
 
-table th,
-table td {
+.table-wrapper th,
+.table-wrapper td {
   padding: var(--half-spacing);
   border: var(--border);
 }
 
-table tbody tr:hover {
+.table-wrapper tbody tr:hover {
   background-color: #f1f1f1;
 }
 
-table td:last-of-type,
-table th:last-of-type {
+.table-wrapper td:last-of-type,
+.table-wrapper th:last-of-type {
     border-right: none;
 }
 
-table td:first-of-type,
-table th:first-of-type {
+.table-wrapper td:first-of-type,
+.table-wrapper th:first-of-type {
     border-left: none;
 }
 
-table th {
+.table-wrapper th {
   border-top: none;
 }
 
-table tr:last-of-type td {
+.table-wrapper tr:last-of-type td {
   border-bottom: none;
+}
+
+#rendered-msg > img {
+  box-shadow: var(--shadow);
+  border-radius: var(--spacing);
+  width: fit-content;
 }
 </style>
 
