@@ -18,6 +18,19 @@ const useTargetBlankLinks = (md: MarkdownIt) => {
   }
 }
 
+const useTableWrapperDivs = (md: MarkdownIt) => {
+  const defaultRender = md.renderer.rules.table_open || function(tokens, idx, options, env, self) {
+    return self.renderToken(tokens, idx, options);
+  };
+  md.renderer.rules.table_open = function(tokens, idx, options, env, self) {
+    return '<div class="table-wrapper">\n' + defaultRender(tokens, idx, options, env, self);
+  };
+  md.renderer.rules.table_close = function(tokens, idx, options, env, self) {
+    const res = self.renderToken(tokens, idx, options);
+    return res + '</div>\n';
+  };
+}
+
 const renderMarkDown = (text: string) => {
   let md = new MarkdownIt({
     highlight: (code: string, lang: string) => {
@@ -31,6 +44,7 @@ const renderMarkDown = (text: string) => {
     }
   })
   useTargetBlankLinks(md)
+  useTableWrapperDivs(md)
   return md.render(text)
 }
 
@@ -91,6 +105,10 @@ pre {
   margin-bottom: 10px;
 }
 
+pre {
+  box-shadow: 0 0 var(--half-spacing) rgba(0, 0, 0, 0.50);
+}
+
 pre code.hljs {
   padding: 0px;
 }
@@ -98,6 +116,49 @@ pre code.hljs {
 div a {
   color: var(--accent-color);
   text-decoration: none;
+}
+
+.table-wrapper {
+  border-radius: var(--spacing);
+  overflow: hidden;
+  border: var(--border);
+  box-shadow: 0 0 var(--half-spacing) rgba(0, 0, 0, 0.20);
+}
+
+table {
+  width: 100%;
+}
+
+table thead tr {
+  background-color: #ece6f5;
+}
+
+table th,
+table td {
+  padding: var(--half-spacing);
+  border: var(--border);
+}
+
+table tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
+table td:last-of-type,
+table th:last-of-type {
+    border-right: none;
+}
+
+table td:first-of-type,
+table th:first-of-type {
+    border-left: none;
+}
+
+table th {
+  border-top: none;
+}
+
+table tr:last-of-type td {
+  border-bottom: none;
 }
 </style>
 
