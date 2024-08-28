@@ -24,19 +24,6 @@ function useTargetBlankLinks(md: MarkdownIt) {
   }
 }
 
-function useTableWrapperDivs(md: MarkdownIt) {
-  const defaultRender = md.renderer.rules.table_open || function(tokens, idx, options, env, self) {
-    return self.renderToken(tokens, idx, options);
-  };
-  md.renderer.rules.table_open = function(tokens, idx, options, env, self) {
-    return '<div class="table-wrapper">\n' + defaultRender(tokens, idx, options, env, self);
-  };
-  md.renderer.rules.table_close = function(tokens, idx, options, env, self) {
-    const res = self.renderToken(tokens, idx, options);
-    return res + '</div>\n';
-  };
-}
-
 function formatTime(value: any): string {
   if (typeof value === 'object') {
     value = value.value;
@@ -69,7 +56,7 @@ function useEcharts(md: MarkdownIt) {
           chart.setOption(options);
         }
       });
-      return `<div class="echarts" style="width: 300px; height: 200px;"></div><div class="echarts-data" style='display:none'>${code}</div>`;
+      return `<div class="echarts" style="width: 100%; height: 200px;"></div><div class="echarts-data" style='display:none'>${code}</div>`;
     }
     return defaultRender(tokens, idx, options, env, self);
   };
@@ -88,7 +75,6 @@ function renderMarkDown(text: string) {
     }
   })
   useTargetBlankLinks(md)
-  useTableWrapperDivs(md)
   useEcharts(md)
   md.use(MarkdownItPlantuml)
   return md.render(text)
@@ -162,49 +148,33 @@ div a {
   text-decoration: none;
 }
 
-.table-wrapper {
-  border-radius: var(--spacing);
-  overflow: hidden;
+.rendered-msg table {
+  width: 100%;
   box-shadow: var(--shadow);
 }
 
-.table-wrapper table {
-  width: 100%;
-}
-
-.table-wrapper thead tr {
+.rendered-msg thead tr {
   background-color: #ece6f5;
 }
 
-.table-wrapper th,
-.table-wrapper td {
+.rendered-msg th,
+.rendered-msg td {
   padding: var(--half-spacing);
   border: var(--border);
 }
 
-.table-wrapper tbody tr:hover {
+.rendered-msg tbody tr:hover {
   background-color: #f1f1f1;
 }
 
-.table-wrapper td:last-of-type,
-.table-wrapper th:last-of-type {
-    border-right: none;
+.echarts {
+  box-shadow: var(--shadow);
+  border-radius: var(--spacing);
+  width: 100%;
+  padding: var(--half-spacing);
 }
 
-.table-wrapper td:first-of-type,
-.table-wrapper th:first-of-type {
-    border-left: none;
-}
-
-.table-wrapper th {
-  border-top: none;
-}
-
-.table-wrapper tr:last-of-type td {
-  border-bottom: none;
-}
-
-#rendered-msg > img {
+.rendered-msg > img  {
   box-shadow: var(--shadow);
   border-radius: var(--spacing);
   width: fit-content;
