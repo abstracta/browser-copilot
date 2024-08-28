@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import MarkdownIt from 'markdown-it'
 import hljs from 'highlight.js'
@@ -8,8 +8,13 @@ import MarkdownItPlantuml from 'markdown-it-plantuml'
 import { ExclamationCircleIcon, CircleFilledIcon } from 'vue-tabler-icons'
 import NewPromptButton from './NewPromptButton.vue'
 import CopyButton from './CopyButton.vue'
+import * as echarts from 'echarts'
 
-const useTargetBlankLinks = (md: MarkdownIt) => {
+const props = defineProps<{ text: string, file: Record<string, string>, isUser: boolean, isComplete: boolean, isSuccess: boolean, agentLogo: string, agentName: string, agentId: string }>()
+const { t } = useI18n()
+const messageElement = ref<HTMLElement | null>(null);
+
+function useTargetBlankLinks(md: MarkdownIt) {
   let defaultRender = md.renderer.rules.link_open || function (tokens, idx, options, env, self) {
     return self.renderToken(tokens, idx, options)
   }
@@ -19,7 +24,7 @@ const useTargetBlankLinks = (md: MarkdownIt) => {
   }
 }
 
-const useTableWrapperDivs = (md: MarkdownIt) => {
+function useTableWrapperDivs(md: MarkdownIt) {
   const defaultRender = md.renderer.rules.table_open || function(tokens, idx, options, env, self) {
     return self.renderToken(tokens, idx, options);
   };
@@ -32,7 +37,45 @@ const useTableWrapperDivs = (md: MarkdownIt) => {
   };
 }
 
-const renderMarkDown = (text: string) => {
+function formatTime(value: any): string {
+  if (typeof value === 'object') {
+    value = value.value;
+  }
+  const time = new Date(parseInt(value))
+  return time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function useEcharts(md: MarkdownIt) {
+  const defaultRender = md.renderer.rules.fence || function(tokens, idx, options, env, self) {
+    return self.renderToken(tokens, idx, options);
+  };
+  md.renderer.rules.fence = function(tokens, idx, options, env, self) {
+    const token = tokens[idx];
+    const code = token.content.trim();
+    if (token.info === 'echarts') {
+      nextTick().then(() => {
+        const container = messageElement.value!;
+        const chartDiv = container.querySelector('.echarts');
+        const chartData = container.querySelector('.echarts-data');
+        if (chartDiv && chartData) {
+          const chart = echarts.init(chartDiv as HTMLDivElement);
+          const options = JSON.parse(chartData.textContent || '');
+          if (options.xAxis.axisLabel.formatter == "formatTime") {
+            options.xAxis.axisLabel.formatter = formatTime;
+          }
+          if (options.xAxis.axisPointer.label.formatter == "formatTime") {
+            options.xAxis.axisPointer.label.formatter = formatTime;
+          }
+          chart.setOption(options);
+        }
+      });
+      return `<div class="echarts" style="width: 300px; height: 200px;"></div><div class="echarts-data" style='display:none'>${code}</div>`;
+    }
+    return defaultRender(tokens, idx, options, env, self);
+  };
+}
+
+function renderMarkDown(text: string) {
   let md = new MarkdownIt({
     highlight: (code: string, lang: string) => {
       let ret = code
@@ -46,12 +89,11 @@ const renderMarkDown = (text: string) => {
   })
   useTargetBlankLinks(md)
   useTableWrapperDivs(md)
+  useEcharts(md)
   md.use(MarkdownItPlantuml)
   return md.render(text)
 }
 
-const props = defineProps<{ text: string, file: Record<string, string>, isUser: boolean, isComplete: boolean, isSuccess: boolean, agentLogo: string, agentName: string, agentId: string }>()
-const { t } = useI18n()
 const renderedMsg = computed(() => props.isUser ? props.text.replaceAll('\n', '<br/>') : renderMarkDown(props.text))
 
 </script>
@@ -75,7 +117,7 @@ const renderedMsg = computed(() => props.isUser ? props.text.replaceAll('\n', '<
         <NewPromptButton v-if="isUser && text" :is-large-icon="false" :text="text" :agent-id="agentId" />
       </div>
     </div>
-    <div class="mt-2 ml-8">
+    <div class="mt-2 ml-8 mr-2">
       <div>
         <template v-if="file.data">
           <audio controls>
@@ -83,7 +125,7 @@ const renderedMsg = computed(() => props.isUser ? props.text.replaceAll('\n', '<
           </audio>
         </template>
         <template v-if="text">
-          <div v-html="renderedMsg" class="flex flex-col text-sm font-light leading-tight gap-4" id="rendered-msg"/>
+          <div v-html="renderedMsg" ref="messageElement" class="flex flex-col text-sm font-light leading-tight gap-4 rendered-msg"/>
         </template>
       </div>
       <div class="ml-3 dot-pulse" v-if="!isComplete" />
@@ -95,7 +137,7 @@ const renderedMsg = computed(() => props.isUser ? props.text.replaceAll('\n', '<
   $dot-height: 5px,
   $dot-color: var(--accent-color));
 
-#rendered-msg pre {
+.rendered-msg pre {
   padding: 15px;
   background: #202126;
   border-radius: 8px;
@@ -103,15 +145,15 @@ const renderedMsg = computed(() => props.isUser ? props.text.replaceAll('\n', '<
 }
 
 // Fix: Inadequate gap between code blocks within list items.
-#rendered-msg li pre {
+.rendered-msg li pre {
   margin-bottom: 10px;
 }
 
-#rendered-msg pre {
+.rendered-msg pre {
   box-shadow: var(--shadow);
 }
 
-#rendered-msg pre code.hljs {
+.rendered-msg pre code.hljs {
   padding: 0px;
 }
 
