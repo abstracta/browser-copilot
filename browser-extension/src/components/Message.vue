@@ -9,6 +9,7 @@ import { ExclamationCircleIcon, CircleFilledIcon } from 'vue-tabler-icons'
 import NewPromptButton from './NewPromptButton.vue'
 import CopyButton from './CopyButton.vue'
 import * as echarts from 'echarts'
+import moment from 'moment'
 
 const props = defineProps<{ text: string, file: Record<string, string>, isUser: boolean, isComplete: boolean, isSuccess: boolean, agentLogo: string, agentName: string, agentId: string }>()
 const { t } = useI18n()
@@ -24,12 +25,22 @@ function useTargetBlankLinks(md: MarkdownIt) {
   }
 }
 
-function formatTime(value: any): string {
-  if (typeof value === 'object') {
-    value = value.value;
+function formatEpoch(config:any): (value: any) => string {
+  return (value: any) => {
+    if (typeof value === 'object') {
+      value = value.value;
+    }
+    const time = moment(parseInt(value))
+    return time.format(config.format);
   }
-  const time = new Date(parseInt(value))
-  return time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function solveEchartsFormatter(obj: any) {
+  if (obj && obj.formatter) {
+    if (obj.formatter.name === 'formatEpoch') {
+      obj.formatter = formatEpoch(obj.formatter)
+    }
+  }
 }
 
 function useEcharts(md: MarkdownIt) {
@@ -47,12 +58,8 @@ function useEcharts(md: MarkdownIt) {
         if (chartDiv && chartData) {
           const chart = echarts.init(chartDiv as HTMLDivElement);
           const options = JSON.parse(chartData.textContent || '');
-          if (options.xAxis.axisLabel.formatter == "formatTime") {
-            options.xAxis.axisLabel.formatter = formatTime;
-          }
-          if (options.xAxis.axisPointer.label.formatter == "formatTime") {
-            options.xAxis.axisPointer.label.formatter = formatTime;
-          }
+          solveEchartsFormatter(options.xAxis.axisLabel);
+          solveEchartsFormatter(options.xAxis.axisPointer.label);
           chart.setOption(options);
         }
       });
