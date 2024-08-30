@@ -36,7 +36,7 @@ onBeforeMount(async () => {
       collectedMessages.push(m)
     }
   })
-  let pendingMessages: any = await sendToServiceWorker(new ActiveTabListener(true))
+  const pendingMessages: any = await sendToServiceWorker(new ActiveTabListener(true))
   for (const m of pendingMessages) {
     onMessage(m)
   }
@@ -47,8 +47,8 @@ onBeforeMount(async () => {
 })
 
 const restoreTabState = async () => {
-  let tabId = await getCurrentTabId()
-  let tabState = await findTabState(tabId)
+  const tabId = await getCurrentTabId()
+  const tabState = await findTabState(tabId)
   if (tabState) {
     sidebarSize = tabState.sidebarSize
     displaying = tabState.displaying
@@ -65,14 +65,14 @@ const sendToServiceWorker = async (msg: BrowserMessage): Promise<any> => {
 }
 
 onBeforeUnmount(async () => {
-  let tabId = await getCurrentTabId()
+  const tabId = await getCurrentTabId()
   await saveTabState(tabId, new TabState(sidebarSize, displaying, toRaw(messages.value), toRaw(agent.value)))
   // wait for message processing so we are sure that before loading new content this has been marked as not ready for messages
   await sendToServiceWorker(new ActiveTabListener(false))
 })
 
 const onMessage = (m: any) => {
-  let msg = BrowserMessage.fromJsonObject(m)
+  const msg = BrowserMessage.fromJsonObject(m)
   if (msg instanceof ToggleSidebar) {
     onToggleSidebar()
   } else if (msg instanceof AgentActivation) {
@@ -92,7 +92,7 @@ const resizeSidebar = async (size: number) => {
 }
 
 const getCurrentTabId = async (): Promise<number> => {
-  let ret = await browser.tabs.getCurrent()
+  const ret = await browser.tabs.getCurrent()
   return ret.id!
 }
 
@@ -106,7 +106,7 @@ const onStartResize = (e: MouseEvent) => {
 
 const onResize = async (e: MouseEvent) => {
   e.preventDefault()
-  let delta = lastResizePos - e.screenX
+  const delta = lastResizePos - e.screenX
   lastResizePos = e.screenX
   sidebarSize += delta
   if (sidebarSize < minSidebarSize) {
@@ -127,7 +127,7 @@ const onCloseSidebar = () => {
 }
 
 const onActivateAgent = async (agentId: string) => {
-  let tab = await browser.tabs.getCurrent()
+  const tab = await browser.tabs.getCurrent()
   sendToServiceWorker(new ActivateAgent(agentId, tab.url!))
 }
 
@@ -136,7 +136,7 @@ const onAgentActivation = (msg: AgentActivation) => {
     onToggleSidebar()
   }
   if (!msg.success) {
-    let text = t('activationError', { agentName: msg.agent.manifest.name, contactEmail: msg.agent.manifest.contactEmail })
+    const text = t('activationError', { agentName: msg.agent.manifest.name, contactEmail: msg.agent.manifest.contactEmail })
     toast.error({ component: ToastMessage, props: { message: text } }, { icon: AlertCircleFilledIcon })
   } else {
     agent.value = Agent.fromJsonObject(msg.agent)
@@ -145,21 +145,24 @@ const onAgentActivation = (msg: AgentActivation) => {
 }
 
 const onInteractionSummary = (msg: InteractionSummary) => {
-  let text = msg.text ? msg.text : t('interactionSummaryError', { contactEmail: agent.value!.manifest.contactEmail })
-  let lastMessage = messages.value[messages.value.length - 1]
-  let messagePosition = lastMessage.isComplete ? messages.value.length : messages.value.length - 1
-  messages.value.splice(messagePosition, 0, ChatMessage.agentMessage(text))
+  if (msg.success && !msg.text) {
+    return
+  }
+  const text = msg.text ? msg.text : t('interactionSummaryError', { contactEmail: agent.value!.manifest.contactEmail })
+  const lastMessage = messages.value[messages.value.length - 1]
+  const messagePosition = lastMessage.isComplete ? messages.value.length : messages.value.length - 1
+  messages.value.splice(messagePosition, 0, msg.success ? ChatMessage.agentMessage(text) : ChatMessage.agentErrorMessage(text))
 }
 
 const onUserMessage = async (text: string, file: Record<string, string>) => {
   messages.value.push(ChatMessage.userMessage(text, file))
   messages.value.push(ChatMessage.agentMessage())
-  let agentSession = await findAgentSession(await getCurrentTabId())
+  const agentSession = await findAgentSession(await getCurrentTabId())
   agentSession!.processUserMessage(text, file, onAgentResponse)
 }
 
 const onAgentResponse = (text: string, complete: boolean, success: boolean) => {
-  let lastMessage = messages.value[messages.value.length - 1]
+  const lastMessage = messages.value[messages.value.length - 1]
   if (!success) {
     text = text ? text : t('agentAnswerError', { contactEmail: agent.value!.manifest.contactEmail })
     lastMessage.isComplete = true

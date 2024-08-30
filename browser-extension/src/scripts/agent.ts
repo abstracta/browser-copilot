@@ -21,7 +21,7 @@ export class Agent {
 
     public static async fromUrl(url: string): Promise<Agent> {
         url = url.endsWith("/") ? url.slice(0, -1) : url
-        let manifestPath = "/manifest.json"
+        const manifestPath = "/manifest.json"
         url = url.endsWith(manifestPath) ? url.slice(0, -manifestPath.length) : url
         return new Agent(url, await fetchJson(`${url}/manifest.json`))
     }
@@ -42,9 +42,9 @@ export class Agent {
     }
 
     private async buildHttpPost(body: any, authService?: AuthService): Promise<RequestInit> {
-        let headers = { "Content-Type": "application/json" } as any
+        const headers = { "Content-Type": "application/json" } as any
         if (authService) {
-            let user = await authService.getUser()
+            const user = await authService.getUser()
             headers['Authorization'] = "Bearer " + user!.access_token
         }
         return {
@@ -73,7 +73,7 @@ export class Agent {
     }
 
     public async * ask(msg: string, sessionId: string, authService?: AuthService): AsyncIterable<string> {
-        let ret = await fetchStreamJson(`${this.sessionUrl(sessionId)}/questions`, await this.buildHttpPost({ question: msg }, authService))
+        const ret = await fetchStreamJson(`${this.sessionUrl(sessionId)}/questions`, await this.buildHttpPost({ question: msg }, authService))
         for await (const part of ret) {
             if (typeof part === "string") {
                 yield part
@@ -88,12 +88,12 @@ export class Agent {
     }
 
     public async transcriptAudio(audioFileBase64: string, sessionId: string, authService?: AuthService) {
-        let ret = await this.postJson(`${this.sessionUrl(sessionId)}/transcriptions`, { file: audioFileBase64 }, authService)
+        const ret = await this.postJson(`${this.sessionUrl(sessionId)}/transcriptions`, { file: audioFileBase64 }, authService)
         return ret.text
     }
 
     public async solveInteractionSummary(detail: any, sessionId: string, authService?: AuthService): Promise<string> {
-        let ret = await this.postJson(`${this.sessionUrl(sessionId)}/interactions`, detail, authService)
+        const ret = await this.postJson(`${this.sessionUrl(sessionId)}/interactions`, detail, authService)
         return ret.summary
     }
 
@@ -107,6 +107,7 @@ export interface AgentManifest {
     prompts?: Prompt[]
     onSessionClose?: EndAction
     onHttpRequest?: AgentRule[]
+    pollInteractionPeriodSeconds?: number
     auth?: AuthConfig
     contactEmail: string
 }
