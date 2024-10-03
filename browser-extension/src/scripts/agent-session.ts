@@ -1,9 +1,8 @@
 import browser from "webextension-polyfill"
-import { Agent, AgentRuleCondition, AddHeaderRuleAction, RecordInteractionRuleAction } from "./agent"
+import { Agent, AgentRuleCondition, AddHeaderRuleAction, RecordInteractionRuleAction, RequestEvent, RequestEventType } from "./agent"
 import { AuthService } from "./auth"
-import { sendToTab } from "../background"
 import { HttpServiceError, fetchJson } from "./http"
-import { InteractionSummary } from "./browser-message"
+import { BrowserMessage, InteractionSummary } from "./browser-message"
 
 export class AgentSession {
   tabId: number
@@ -26,7 +25,8 @@ export class AgentSession {
     return new AgentSession(obj.tabId, Agent.fromJsonObject(obj.agent), obj.url, obj.id, obj.pollId)
   }
 
-  public async activate() {
+  // cannot just import sendToTab from background.ts as it will re register listeners and cause requests to be processed twice and message duplication in ui
+  public async activate(msgSender: (msg: BrowserMessage) => void) {
     let resp = await this.agent.createSession(await browser.i18n.getAcceptLanguages(), this.authService)
     this.id = resp.id
     let httpAction = this.agent.activationAction?.httpRequest
@@ -34,7 +34,7 @@ export class AgentSession {
       await fetchJson(this.solveUrlTemplate(httpAction.url, this.url), { method: httpAction.method })
     }
     await this.updateRequestRules()
-    await this.startPolling()
+    await this.startPolling(msgSender)
   }
 
   private solveUrlTemplate(urlTemplate: string, baseUrl: string): string {
@@ -95,25 +95,26 @@ export class AgentSession {
     return prevRules.filter(r => r.condition.tabIds?.includes(this.tabId)).map(r => r.id)
   }
 
-  private async startPolling() {
+  private async startPolling(msgSender: (msg: BrowserMessage) => void) {
     const pollPeriodSeconds = this.agent.manifest.pollInteractionPeriodSeconds
     if (pollPeriodSeconds) {
-      this.pollId = setInterval(async () => await this.pollInteraction(), pollPeriodSeconds * 1000)
+      this.pollId = setInterval(async () => await this.pollInteraction(msgSender), pollPeriodSeconds * 1000)
     }
   }
 
-  private async pollInteraction() {
+  private async pollInteraction(msgSender: (msg: BrowserMessage) => void) {
     try {
-    const summary = await this.agent.solveInteractionSummary({}, this.id!, this.authService)
-    await sendToTab(this.tabId, new InteractionSummary(true, summary))
+      const summary = await this.agent.solveInteractionSummary(undefined, this.id!, this.authService)
+      if (summary) {
+        await msgSender(new InteractionSummary(true, summary))
+      }
     } catch (e) {
       // exceptions from http methods are already logged so no need to handle them
-      const msg = new InteractionSummary(false, e instanceof HttpServiceError ? e.detail : undefined)
-      sendToTab(this.tabId, msg);
+      msgSender(new InteractionSummary(false, e instanceof HttpServiceError ? e.detail : undefined));
     }
   }
 
-  public async processInteraction(req: browser.WebRequest.OnCompletedDetailsType): Promise<string | undefined> {
+  public async processInteraction(req: RequestEvent): Promise<string | undefined> {
     const actions = this.agent.findMatchingActions(req)
     for (const a of actions) {
       if (a.recordInteraction) {
@@ -123,8 +124,16 @@ export class AgentSession {
     }
   }
 
-  private async findInteraction(req: browser.WebRequest.OnCompletedDetailsType, action: RecordInteractionRuleAction): Promise<any> {
-    return await fetchJson(this.solveUrlTemplate(action.url, req.url))
+  private async findInteraction(req: RequestEvent, action: RecordInteractionRuleAction): Promise<any> {
+    if (action.httpRequest) {
+      return await fetchJson(this.solveUrlTemplate(action.httpRequest.url, req.details.url), { method: action.httpRequest.method })
+    } else {
+      const body = (req.details as browser.WebRequest.OnBeforeRequestDetailsType).requestBody?.raw
+      if (!body || !body[0].bytes) {
+        return null
+      }
+      return JSON.parse(new TextDecoder("utf-8").decode(body[0].bytes))
+    }
   }
 
   public async processUserMessage(text: string, file: Record<string, string>, msgHandler: (text: string, complete: boolean, success: boolean) => void) {

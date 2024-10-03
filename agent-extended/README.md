@@ -95,6 +95,7 @@ The previous manifest includes the following sections:
     * `urlRegex`: Regular Expression to match the request URL to. When not specified all request URLs will match.
     * `requestMethods`: The request must use one of the provided methods. E.g.: `["GET", "POST"]`. When not specified then any request method will match.
     * `resourceTypes`: The types of resources that may be retrieved by the request. E.g.: `["main_frame", "sub_frame"]`. Check [here](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/declarativeNetRequest/ResourceType) for a list of resource types.
+    * `event`: Species either `onBeforeRequest` or `onCompleted` to identify if the actions should be triggered before the http request is made or after it completed. To be albe to use the request body in an action (for example in `recordInteraction`) it is required to use the `onBeforeRequest` event. When not specified `onCompleted` is used.
     * More to come :)
   * `actions`: specifies the actions to be taken when the rule conditions are met.
     * `activate`:

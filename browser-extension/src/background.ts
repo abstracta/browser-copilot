@@ -1,35 +1,16 @@
 import browser from "webextension-polyfill";
-import { Agent } from "./scripts/agent";
-import {
-  findAllAgents,
-  addAgent,
-  findAgentById,
-} from "./scripts/agent-repository";
+import { Agent, RequestEvent, RequestEventType } from "./scripts/agent";
+import { findAllAgents, addAgent, findAgentById, } from "./scripts/agent-repository";
 import { AgentSession } from "./scripts/agent-session";
-import {
-  findAgentSession,
-  saveAgentSession,
-  removeAgentSession,
-} from "./scripts/agent-session-repository";
+import { findAgentSession, saveAgentSession, removeAgentSession, } from "./scripts/agent-session-repository";
 import { saveAgentPrompts } from "./scripts/prompt-repository";
-import {
-  BrowserMessage,
-  ToggleSidebar,
-  ActiveTabListener,
-  ActivateAgent,
-  AgentActivation,
-  InteractionSummary,
-} from "./scripts/browser-message";
+import { BrowserMessage, ToggleSidebar, ActiveTabListener, ActivateAgent, AgentActivation, InteractionSummary, } from "./scripts/browser-message";
 import { HttpServiceError } from "./scripts/http";
-import {
-  isActiveTabListener,
-  setTabListenerActive,
-  removeTabListenerStatus,
-} from "./scripts/tab-listener-status-repository";
+import { isActiveTabListener, setTabListenerActive, removeTabListenerStatus, } from "./scripts/tab-listener-status-repository";
 import { removeTabState } from "./scripts/tab-state-repository";
 
 let pendingMessages: Map<number, BrowserMessage[]>;
-let pendingRequests: Map<number, browser.WebRequest.OnCompletedDetailsType[]>;
+let pendingRequests: Map<number, RequestEvent[]>;
 
 browser.runtime.onInstalled.addListener(async () => {
   createToggleContextMenu();
@@ -58,7 +39,7 @@ const toggleSidebar = (tabId: number) => {
   sendToTab(tabId, new ToggleSidebar());
 };
 
-export const sendToTab = async (tabId: number, msg: BrowserMessage) => {
+const sendToTab = async (tabId: number, msg: BrowserMessage) => {
   // here we check for both the state of listener and pendingMessages since:
   // 1- if we only check for isActiveTabListener, isActiveTabListener may return false even after activateTabListener sets it to true. Eg, when starting a tab (since it may activate an agent while Index.vue component is mounting):
   //    1.1 webRequest.onCompleted invokes this method to activate an agent, and execution of service worker thread (SWT) suspends when calling await, internally it resolves the value to false but does not yet unsuspends the thread
@@ -116,7 +97,7 @@ const activateAgent = async (tabId: number, agent: Agent, url: string) => {
   const session = new AgentSession(tabId, agent, url);
   let success = true;
   try {
-    await session.activate();
+    await session.activate((msg) => sendToTab(tabId, msg));
     await saveAgentSession(session);
   } catch (e) {
     // exceptions from http methods are already logged so no need to handle them
@@ -125,32 +106,34 @@ const activateAgent = async (tabId: number, agent: Agent, url: string) => {
   sendToTab(tabId, new AgentActivation(agent, success));
 };
 
+browser.webRequest.onBeforeRequest.addListener(
+  (req) => processRequest(new RequestEvent(RequestEventType.OnBeforeRequest, req)),
+  { urls: ["http://*/*", "https://*/*"] },
+  ["requestBody"]
+);
+
 browser.webRequest.onCompleted.addListener(
-  async (req) => {
-    /* 
-    this logic of enqueuing requests and processing in one call simplifies the rest of the logic
-    to avoid for example reactivating an agent that is already activating due to async execution of methods
-    */
-    const tabRequests = getTabPendingRequests(req.tabId);
-    if (!tabRequests.length) {
-      tabRequests.push(req);
-      while (tabRequests.length) {
-        try {
-          await processRequest(tabRequests[0]);
-        } finally {
-          tabRequests.shift()
-        }
-      }
-    } else {
-      tabRequests.push(req);
-    }
-  },
+  (req) => processRequest(new RequestEvent(RequestEventType.OnCompleted, req)),
   { urls: ["http://*/*", "https://*/*"] }
 );
 
-function getTabPendingRequests(
-  tabId: number
-): browser.WebRequest.OnCompletedDetailsType[] {
+function processRequest(req: RequestEvent) {
+  /* 
+    this logic of enqueuing requests and processing in one call simplifies the rest of the logic
+    to avoid for example reactivating an agent that is already activating due to async execution of methods. 
+    In essence we want to only process one request at a time.
+    */
+    const tabId = req.details.tabId;
+    const tabRequests = getTabPendingRequests(tabId);
+    if (!tabRequests.length) {
+      tabRequests.push(req);
+      asyncProcessRequests(tabId);
+    } else {
+      tabRequests.push(req);
+    }
+}
+
+function getTabPendingRequests(tabId: number): RequestEvent[] {
   if (!pendingRequests) {
     pendingRequests = new Map();
   }
@@ -162,9 +145,21 @@ function getTabPendingRequests(
   return ret;
 }
 
-async function processRequest(req: browser.WebRequest.OnCompletedDetailsType) {
-  const tabId = req.tabId;
-  if (req.initiator?.startsWith("chrome-extension://")) {
+async function asyncProcessRequests(tabId: number) {
+  const tabRequests = getTabPendingRequests(tabId);
+  while (tabRequests.length) {
+    try {
+      await asyncProcessRequest(tabRequests[0])
+    } finally {
+      // shift needs to be done after asyncProcessRequest to avoid processing requests concurrently due to condition cheking in processRequest
+      tabRequests.shift()
+    }
+  }
+}
+
+async function asyncProcessRequest(req: RequestEvent) {
+  const tabId = req.details.tabId;
+  if (req.details.initiator?.startsWith("chrome-extension://")) {
     return;
   }
   const session = await findAgentSession(tabId);
@@ -188,7 +183,7 @@ async function processRequest(req: browser.WebRequest.OnCompletedDetailsType) {
     const agents = await findAllAgents();
     for (const a of agents) {
       if (a.activatesOn(req)) {
-        await activateAgent(tabId, a, req.url);
+        await activateAgent(tabId, a, req.details.url);
       }
     }
   }

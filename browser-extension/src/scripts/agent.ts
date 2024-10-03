@@ -54,20 +54,21 @@ export class Agent {
         }
     }
 
-    public activatesOn(req: browser.WebRequest.OnCompletedDetailsType): boolean {
+    public activatesOn(req: RequestEvent): boolean {
         if (!this.activationRule) {
             return false
         }
         return this.requestMatchesRuleCondition(req, this.activationRule)
     }
 
-    private requestMatchesRuleCondition(req: browser.WebRequest.OnCompletedDetailsType, rule: AgentRule): boolean {
-        return new RegExp(rule.condition.urlRegex!).test(req.url)
-            && (!rule.condition.requestMethods || rule.condition.requestMethods!.includes(req.method.toLowerCase()))
-            && (!rule.condition.resourceTypes || rule.condition.resourceTypes!.includes(req.type))
+    private requestMatchesRuleCondition(req: RequestEvent, rule: AgentRule): boolean {
+        return new RegExp(rule.condition.urlRegex!).test(req.details.url)
+            && (!rule.condition.requestMethods || rule.condition.requestMethods!.includes(req.details.method.toLowerCase()))
+            && (!rule.condition.resourceTypes || rule.condition.resourceTypes!.includes(req.details.type))
+            && (!rule.condition.event && req.event === RequestEventType.OnCompleted || rule.condition.event === req.event)
     }
 
-    public findMatchingActions(req: browser.WebRequest.OnCompletedDetailsType): AgentRuleAction[] {
+    public findMatchingActions(req: RequestEvent): AgentRuleAction[] {
         return this.manifest.onHttpRequest ? this.manifest.onHttpRequest.filter(r => this.requestMatchesRuleCondition(req, r))
             .flatMap(r => r.actions) : []
     }
@@ -121,6 +122,7 @@ export interface AgentRuleCondition {
     urlRegex: string
     requestMethods?: string[]
     resourceTypes?: string[]
+    event?: string
 }
 
 export interface AgentRuleAction {
@@ -148,9 +150,24 @@ export interface AddHeaderRuleAction {
 }
 
 export interface RecordInteractionRuleAction {
-    url: string
+    httpRequest?: HttpRequestAction
 }
 
 export interface AgentSession {
     id: string
+}
+
+export class RequestEvent {
+    event: RequestEventType;
+    details: browser.WebRequest.OnCompletedDetailsType | browser.WebRequest.OnBeforeRequestDetailsType;
+
+    constructor(event: RequestEventType, details: browser.WebRequest.OnCompletedDetailsType | browser.WebRequest.OnBeforeRequestDetailsType) {
+        this.event = event;
+        this.details = details;
+    }
+}
+
+export enum RequestEventType {
+    OnBeforeRequest = "onBeforeRequest",
+    OnCompleted = "onCompleted",
 }

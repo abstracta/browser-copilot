@@ -96,7 +96,6 @@ const getCurrentTabId = async (): Promise<number> => {
   return ret.id!
 }
 
-
 const onStartResize = (e: MouseEvent) => {
   lastResizePos = e.screenX
   window.document.body.className = 'resizing'
@@ -145,9 +144,6 @@ const onAgentActivation = (msg: AgentActivation) => {
 }
 
 const onInteractionSummary = (msg: InteractionSummary) => {
-  if (msg.success && !msg.text) {
-    return
-  }
   const text = msg.text ? msg.text : t('interactionSummaryError', { contactEmail: agent.value!.manifest.contactEmail })
   const lastMessage = messages.value[messages.value.length - 1]
   const messagePosition = lastMessage.isComplete ? messages.value.length : messages.value.length - 1
