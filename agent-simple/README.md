@@ -6,9 +6,11 @@ This is a good example in case you want to create some agent with LLM integratio
 
 # Run
 
-To run this agent, run the following commands in current directory:
+Copy [sample.env](./sample.env) to [.env](./.env) and fill in the required values.
+
+Then run this agent with the following commands:
 
 ```bash
 devbox shell
-poetry install --no-root && poetry run python agent.pyt
+poetry install --no-root && poetry run python agent.py
 ```
