@@ -35,6 +35,7 @@ ul {
 }
 
 li {
+  margin: var(--half-spacing);
   list-style-type: disc;
 }
 

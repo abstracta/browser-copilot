@@ -139,7 +139,7 @@ onBeforeUnmount(() => {
         </template>
         <template v-if="text">
           <div v-html="renderedMsg" ref="messageElement"
-            class="flex flex-col text-sm font-light leading-tight gap-4 rendered-msg" />
+            class="flex flex-col text-sm font-light leading-tight gap-2 rendered-msg" />
         </template>
       </div>
       <div class="ml-3 dot-pulse" v-if="!isComplete" />
