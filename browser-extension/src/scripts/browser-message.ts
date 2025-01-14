@@ -21,6 +21,8 @@ export abstract class BrowserMessage {
         return AgentActivation.fromJsonObject(obj)
       case "interactionSummary":
         return InteractionSummary.fromJsonObject(obj)
+      case "navigation":
+        return Navigation.fromJsonObject(obj)
       default:
         // we log and throw since the handling should be the same in all points and error allows to properly interrupt any further processing of the message
         let msg = `Unknown message type: ${obj.type}`
@@ -104,5 +106,18 @@ export class InteractionSummary extends BrowserMessage {
 
   public static fromJsonObject(obj: any): InteractionSummary {
     return new InteractionSummary(obj.success, obj.text)
+  }
+}
+
+export class Navigation extends BrowserMessage {
+  data: { key: string }
+
+  constructor(data: { key: string }) {
+    super("navigation")
+    this.data = data
+  } 
+
+  public static fromJsonObject(obj: any): Navigation {
+    return new Navigation(obj.data)
   }
 }

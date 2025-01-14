@@ -53,7 +53,11 @@ async function* fetchSSEStream(resp: Response, url: string, options?: RequestIni
       if (event.event === "error") {
         console.warn(`Problem while reading stream response from ${options?.method ? options.method : 'GET'} ${url}`, event)
         throw new HttpServiceError()
-      } else {
+      }
+      if (event.event === "navigation") {
+        yield JSON.stringify({ "flowKey": event.data })
+      }
+      else {
         yield event.data
       }
     }
