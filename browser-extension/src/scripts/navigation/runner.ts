@@ -47,10 +47,13 @@ export class Runner {
         element.dispatchEvent(new Event('input', { bubbles: true }));
         element.dispatchEvent(new Event('change', { bubbles: true }));
         break;
+      case "scroll":
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        break;
     }
 
     // This is made on purpose to emulate a real user interaction
-    if (!isLastStep) await this.wait(500);
+    if (!isLastStep) await this.wait(1000);
     CircleControls.hideCircle();
   }
 
