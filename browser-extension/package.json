@@ -19,7 +19,8 @@
     "vue": "^3.5.13",
     "vue-i18n": "^9.14.1",
     "vue-tabler-icons": "^2.21.0",
-    "vue-toastification": "2.0.0-rc.5"
+    "vue-toastification": "2.0.0-rc.5",
+    "ai-circle": "github:santiagomorelle/ai-circle"
   },
   "devDependencies": {
     "@intlify/unplugin-vue-i18n": "^1.6.0",
