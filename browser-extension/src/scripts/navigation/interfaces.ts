@@ -6,6 +6,6 @@ export interface Step {
 }
 
 export interface RunnerState {
-  currentStepIndex: number;
-  steps: Step[];
+  currentStepIndex: number
+  steps: Step[]
 }
