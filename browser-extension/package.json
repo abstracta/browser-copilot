@@ -9,6 +9,7 @@
     "build": "vue-tsc && vite build"
   },
   "dependencies": {
+    "ai-circle": "github:santiagomorelle/ai-circle",
     "autoprefixer": "^10.4.20",
     "echarts": "^5.5.1",
     "markdown-it-plantuml": "^1.4.1",
@@ -19,8 +20,7 @@
     "vue": "^3.5.13",
     "vue-i18n": "^9.14.1",
     "vue-tabler-icons": "^2.21.0",
-    "vue-toastification": "2.0.0-rc.5",
-    "ai-circle": "github:santiagomorelle/ai-circle"
+    "vue-toastification": "2.0.0-rc.5"
   },
   "devDependencies": {
     "@intlify/unplugin-vue-i18n": "^1.6.0",

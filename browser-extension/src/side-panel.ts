@@ -3,7 +3,7 @@ import { BrowserMessage, ResizeSidebar, Navigation } from "./scripts/browser-mes
 
 // Navigation
 import { Runner } from "./scripts/navigation/runner"
-import { Flow } from "./scripts/navigation/interfaces"
+import { Step } from "./scripts/navigation/interfaces"
 import flows from "../../../abstracta_copilot/skills/navigation/assets/flows.json"
 
 const setSidebarIframeStyle = (iframe: HTMLIFrameElement) => {
@@ -51,8 +51,16 @@ browser.runtime.onMessage.addListener(async (m: any) => {
         const key = msg.data.key as keyof typeof flows;
 
         const runner = new Runner()
-        const isCompleted = runner.runFlow(flows[key] as Flow)
+        const isCompleted = runner.runFlow(flows[key].steps as Step[])
 
         return { type: "flowStatus", status: isCompleted }
     }
 })
+
+
+const runnerState = sessionStorage.getItem('runner_state')
+
+if (runnerState) {
+    const runner = new Runner()
+    runner.runFlow([])
+}

@@ -16,9 +16,7 @@ export class Runner {
 
     while (Date.now() - startTime < timeout) {
       const element = this.getElementBySelector(selector);
-      
       if (element) return element;
-
       await this.wait(100);
     }
 
@@ -59,7 +57,7 @@ export class Runner {
     if (element) await this.wait(1500);
 
     // Show circle with ✦ icon to highlight the element
-    CircleControls.showCircle(element as HTMLElement);
+    CircleControls.showCircle(element as HTMLElement, "PURPLE");
     await this.wait(1000);
 
     // Execute action
