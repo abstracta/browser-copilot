@@ -33,7 +33,7 @@ function renderMarkDown(text: string) {
   })
   useTargetBlankLinks(md)
   useEcharts(md)
-  md.use(MarkdownItPlantuml)
+  md.use(MarkdownItPlantuml as unknown as MarkdownIt.PluginWithOptions);
   return md.render(text)
 }
 

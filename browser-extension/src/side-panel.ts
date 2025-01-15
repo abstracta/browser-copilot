@@ -4,7 +4,7 @@ import { BrowserMessage, ResizeSidebar, Navigation } from "./scripts/browser-mes
 // Navigation
 import { Runner } from "./scripts/navigation/runner"
 import { Step } from "./scripts/navigation/interfaces"
-import flows from "../../../abstracta_copilot/skills/navigation/assets/flows.json"
+import flows from "../../../abstracta_copilot/skills/navigation_playback/assets/flows.json"
 
 const setSidebarIframeStyle = (iframe: HTMLIFrameElement) => {
     let style = iframe.style

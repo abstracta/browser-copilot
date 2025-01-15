@@ -10,7 +10,7 @@ export class AgentSession {
   url: string
   id?: string
   authService?: AuthService
-  pollId?: number
+  pollId?: number | NodeJS.Timeout
 
   constructor(tabId: number, agent: Agent, url: string, id?: string, pollId?: number) {
     this.id = id
