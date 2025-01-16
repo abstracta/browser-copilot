@@ -51,28 +51,36 @@ export class Runner {
   }
   //#endregion
 
-  private async runStep(step: Step, isLastStep: boolean): Promise<void> {
-    // Wait for element
-    const element = await this.waitForElement(step.selector)
-    if (element) await this.wait(1500)
+  private async runStep(step: Step, isLastStep: boolean): Promise<void> {  
+    if (step.action !== "navigate") {
+      const element = await this.waitForElement(step.selector)
 
-    // Show circle with ✦ icon to highlight the element
-    CircleControls.showCircle(element as HTMLElement, "PURPLE")
-    await this.wait(1000)
+      if (!element) {
+        console.error(`Element not found for selector: ${step.selector}`)
+        return
+      }
 
-    // Execute action
-    switch (step.action) {
-      case "click":
-        (element as HTMLElement).click()
-        break
-      case "fill":
-        (element as HTMLInputElement).value = step.value || ""
-        element.dispatchEvent(new Event('input', { bubbles: true }))
-        element.dispatchEvent(new Event('change', { bubbles: true }))
-        break
-      case "scroll":
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        break
+      // Show circle with ✦ icon to highlight the element
+      CircleControls.showCircle(element as HTMLElement, "PURPLE")
+      await this.wait(1000)
+
+      switch (step.action) {
+        case "click":
+          (element as HTMLElement).click()
+          break
+        case "fill":
+          (element as HTMLInputElement).value = step.value || ""
+          element.dispatchEvent(new Event("input", { bubbles: true }))
+          element.dispatchEvent(new Event("change", { bubbles: true }))
+          break
+        case "scroll":
+          element.scrollIntoView({ behavior: "smooth", block: "start" })
+          break
+      }
+    } else {
+      if (step.value) {
+        window.location.href = step.value
+      }
     }
 
     // This is made on purpose to emulate a real user interaction
