@@ -10,7 +10,7 @@ export class AgentSession {
   url: string
   id?: string
   authService?: AuthService
-  pollId?: number
+  pollId?: number | NodeJS.Timeout
 
   constructor(tabId: number, agent: Agent, url: string, id?: string, pollId?: number) {
     this.id = id
@@ -136,6 +136,18 @@ export class AgentSession {
     }
   }
 
+  private async handleNavigation(key: string) {
+    const message = { key: JSON.parse(key)["flowKey"] }
+    
+    browser.tabs.sendMessage(this.tabId, {data: message, type: "navigation"}).then((response) => {
+      if (response.type === "flowStatus") {
+          // Acá se puede hacer algo después de la navegación.
+      }
+    }).catch(error => {
+      console.error("Error Executing Navigation", error)
+    })
+  }
+
   public async processUserMessage(text: string, file: Record<string, string>, msgHandler: (text: string, complete: boolean, success: boolean) => void) {
     try {
       if (file.data) {
@@ -143,7 +155,9 @@ export class AgentSession {
       }
       const ret = this.agent.ask(text, this.id!, this.authService)
       for await (const part of ret) {
-        msgHandler(part, false, true)
+        const isFlow = part.includes("flowKey")
+        isFlow && this.handleNavigation(part)
+        !isFlow && msgHandler(part, false, true)
       }
       msgHandler("", true, true)
     } catch (e) {
