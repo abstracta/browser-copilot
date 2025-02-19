@@ -1,12 +1,8 @@
 import browser from "webextension-polyfill"
-import { BrowserMessage, ResizeSidebar, Navigation } from "./scripts/browser-message"
+import { BrowserMessage, ResizeSidebar, FlowStepExecution } from "./scripts/browser-message"
+import { FlowExecutor } from "./scripts/flow"
 
-// Navigation
-import { Runner } from "./scripts/navigation/runner"
-import { Step } from "./scripts/navigation/interfaces"
-import flows from "../../../abstracta_copilot/skills/navigation_playback/assets/flows.json"
-
-const setSidebarIframeStyle = (iframe: HTMLIFrameElement) => {
+function setSidebarIframeStyle(iframe: HTMLIFrameElement) {
     let style = iframe.style
     style.height = "100%"
     style.position = "fixed"
@@ -16,7 +12,7 @@ const setSidebarIframeStyle = (iframe: HTMLIFrameElement) => {
     style.border = "0px"
 }
 
-const resize = (size: number) => {
+function resize(size: number) {
     if (size > window.innerWidth) {
         size = window.innerWidth
     }
@@ -46,21 +42,7 @@ browser.runtime.onMessage.addListener(async (m: any) => {
     let msg = BrowserMessage.fromJsonObject(m)
     if (msg instanceof ResizeSidebar) {
         resize(msg.size)
-    }
-    if (msg instanceof Navigation) {
-        const key = msg.data.key as keyof typeof flows;
-
-        const runner = new Runner()
-        const isCompleted = runner.runFlow(flows[key].steps as Step[])
-
-        return { type: "flowStatus", status: isCompleted }
+    } else if (msg instanceof FlowStepExecution) {
+        return await new FlowExecutor(0).runStep(msg.step)
     }
 })
-
-
-const runnerState = sessionStorage.getItem('runner_state')
-
-if (runnerState) {
-    const runner = new Runner()
-    runner.runFlow([])
-}

@@ -39,13 +39,18 @@ class QuestionRequest(BaseModel):
     question: Optional[str] = ""
 
 
+class AgentStep(BaseModel):
+    action: str = "message"
+    value: str
+
+
 class QuestionResponse(BaseModel):
-    answer: str
+    steps: List[AgentStep]
 
 
 @app.post('/sessions/{session_id}/questions', status_code=status.HTTP_200_OK)
 async def answer_question(session_id: str, req: QuestionRequest) -> QuestionResponse:
-    return QuestionResponse(answer=req.question)
+    return QuestionResponse(steps=[AgentStep(value=req.question)])
 
 
 if __name__ == "__main__":

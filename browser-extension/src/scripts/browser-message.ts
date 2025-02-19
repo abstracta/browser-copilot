@@ -1,4 +1,5 @@
 import { Agent } from "./agent"
+import { FlowStep } from "./flow"
 
 export abstract class BrowserMessage {
   type: string
@@ -21,8 +22,8 @@ export abstract class BrowserMessage {
         return AgentActivation.fromJsonObject(obj)
       case "interactionSummary":
         return InteractionSummary.fromJsonObject(obj)
-      case "navigation":
-        return Navigation.fromJsonObject(obj)
+      case "flowStepExecution":
+        return FlowStepExecution.fromJsonObject(obj)
       default:
         // we log and throw since the handling should be the same in all points and error allows to properly interrupt any further processing of the message
         let msg = `Unknown message type: ${obj.type}`
@@ -109,15 +110,15 @@ export class InteractionSummary extends BrowserMessage {
   }
 }
 
-export class Navigation extends BrowserMessage {
-  data: { key: string }
+export class FlowStepExecution extends BrowserMessage {
+  step: FlowStep
 
-  constructor(data: { key: string }) {
-    super("navigation")
-    this.data = data
-  } 
+  constructor(step: FlowStep) {
+    super("flowStepExecution")
+    this.step = step
+  }
 
-  public static fromJsonObject(obj: any): Navigation {
-    return new Navigation(obj.data)
+  public static fromJsonObject(obj: any): FlowStepExecution {
+    return new FlowStepExecution(obj.step)
   }
 }

@@ -9,9 +9,11 @@ import { Agent } from '../scripts/agent'
 import { TabState, ChatMessage } from '../scripts/tab-state'
 import { findTabState, saveTabState } from '../scripts/tab-state-repository'
 import { findAgentSession } from '../scripts/agent-session-repository'
+import { FlowStepError } from '../scripts/flow'
 import CopilotChat from '../components/CopilotChat.vue'
 import CopilotList from '../components/CopilotList.vue'
 import ToastMessage from '../components/ToastMessage.vue'
+import { HttpServiceError } from "../scripts/http"
 
 const toast = useToast()
 const { t } = useI18n()
@@ -44,6 +46,7 @@ onBeforeMount(async () => {
     onMessage(m)
   }
   collectedMessages = undefined
+  await resumeFlow()
 })
 
 const restoreTabState = async () => {
@@ -62,6 +65,11 @@ const restoreTabState = async () => {
 
 const sendToServiceWorker = async (msg: BrowserMessage): Promise<any> => {
   return await browser.runtime.sendMessage(msg)
+}
+
+const resumeFlow = async () => {
+  const agentSession = await findAgentSession(await getCurrentTabId())
+  await agentSession?.resumeFlow(onAgentResponse, onAgentError)
 }
 
 onBeforeUnmount(async () => {
@@ -154,23 +162,35 @@ const onUserMessage = async (text: string, file: Record<string, string>) => {
   messages.value.push(ChatMessage.userMessage(text, file))
   messages.value.push(ChatMessage.agentMessage())
   const agentSession = await findAgentSession(await getCurrentTabId())
-  agentSession!.processUserMessage(text, file, onAgentResponse)
+  agentSession!.processUserMessage(text, file, onAgentResponse, onAgentError)
 }
 
-const onAgentResponse = (text: string, complete: boolean, success: boolean) => {
+const onAgentResponse = (text: string, complete: boolean) => {
   const lastMessage = messages.value[messages.value.length - 1]
-  if (!success) {
-    text = text ? text : t('agentAnswerError', { contactEmail: agent.value!.manifest.contactEmail })
-    lastMessage.isComplete = true
-    if (!lastMessage.text) {
-      lastMessage.text += text
-      lastMessage.isSuccess = false
-    } else {
-      messages.value.push(ChatMessage.agentErrorMessage(text))
-    }
+  lastMessage.isComplete = complete
+  lastMessage.text += text
+}
+
+const onAgentError = (error: any) => {
+  // exceptions from http methods are already logged so no need to handle them
+  if (!(error instanceof HttpServiceError)) {
+    console.warn("Problem processing agent answer", error)
+  }
+  let text = null
+  if (error instanceof HttpServiceError && error.detail) {
+    text = error.detail
+  } else if (error instanceof FlowStepError && error.errorCode === 'MissingElement') {
+    text = t("flowStep" + error.errorCode, { selector: error.step.selector, contactEmail: agent.value!.manifest.contactEmail })
   } else {
-    lastMessage.isComplete = complete
+    text = t('agentAnswerError', { contactEmail: agent.value!.manifest.contactEmail })
+  }
+  const lastMessage = messages.value[messages.value.length - 1]
+  lastMessage.isComplete = true
+  if (!lastMessage.text) {
     lastMessage.text += text
+    lastMessage.isSuccess = false
+  } else {
+    messages.value.push(ChatMessage.agentErrorMessage(text))
   }
 }
 </script>
@@ -209,12 +229,14 @@ const onAgentResponse = (text: string, complete: boolean, success: boolean) => {
   "en": {
     "activationError": "Could not activate {agentName} Copilot. You can try again and if the issue persists then contact [{agentName} Copilot support](mailto:{contactEmail}?subject=Activation%20issue)",
     "interactionSummaryError": "I could not process some information from the current site. This might impact the information and answers I provide. If the issue persists please contact [support](mailto:{contactEmail}?subject=Interaction%20issue)",
-    "agentAnswerError": "I am currently unable to complete your request. You can try again and if the issue persists contact [support](mailto:{contactEmail}?subject=Question%20issue)"
+    "agentAnswerError": "I am currently unable to complete your request. You can try again and if the issue persists contact [support](mailto:{contactEmail}?subject=Question%20issue)",
+    "flowStepMissingElement": "I could not find the element '{selector}'. This might be due to recent changes in the page which I am not aware of. Please try again and if the issue persists contact [support](mailto:{contactEmail}?subject=Navigation%20element).",
   },
   "es": {
     "activationError": "No se pudo activar el Copiloto {agentName}. Puedes intentar de nuevo y si el problema persiste contactar al [soporte del Copiloto {agentName}](mailto:{contactEmail}?subject=Activation%20issue)",
     "interactionSummaryError": "No pude procesar informacion generada por la página actual. Esto puede impactar en la información y respuestas que te puedo dar. Si el problema persiste por favor contacta a [soporte](mailto:{contactEmail})?subject=Interaction%20issue",
-    "agentAnswerError": "Ahora no puedo completar tu pedido. Puedes intentar de nuevo y si el problema persiste contactar a [soporte](mailto:{contactEmail}?subject=Question%20issue)"
+    "agentAnswerError": "Ahora no puedo completar tu pedido. Puedes intentar de nuevo y si el problema persiste contactar a [soporte](mailto:{contactEmail}?subject=Question%20issue)",
+    "flowStepMissingElement": "No pude encontrar el elemento '{selector}'. Esto puede ser debido a cambios recientes en la página de los cuales no tengo conocimiento. Por favor intenta de nuevo y si el problema persiste contacta a [soporte](mailto:{contactEmail}?subject=Navigation%20element).", 
   }
 }
 </i18n>

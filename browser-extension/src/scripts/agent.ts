@@ -2,7 +2,7 @@ import browser from "webextension-polyfill"
 import { Prompt } from "./prompt-repository"
 import { AuthService, AuthConfig } from "./auth"
 import { fetchJson, fetchStreamJson } from "./http"
-
+import { AgentFlow } from "./flow"
 
 export class Agent {
     url: string
@@ -73,13 +73,13 @@ export class Agent {
             .flatMap(r => r.actions) : []
     }
 
-    public async * ask(msg: string, sessionId: string, authService?: AuthService): AsyncIterable<string> {
+    public async * ask(msg: string, sessionId: string, authService?: AuthService): AsyncIterable<string | AgentFlow> {
         const ret = await fetchStreamJson(`${this.sessionUrl(sessionId)}/questions`, await this.buildHttpPost({ question: msg }, authService))
         for await (const part of ret) {
             if (typeof part === "string") {
                 yield part
             } else {
-                yield part.answer
+                yield AgentFlow.fromJsonObject(part)
             }
         }
     }

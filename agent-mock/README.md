@@ -10,5 +10,5 @@ To run this agent, run the following commands in current directory:
 
 ```bash
 devbox shell
-poetry install --no-root && poetry run python agent.pyt
+poetry install --no-root && poetry run python agent.py
 ```

@@ -1,8 +1,10 @@
 import asyncio
 import datetime
+import enum
 import logging
 import os
-from typing import List, AsyncIterator
+from typing import List, AsyncIterator, Optional
+from pydantic import BaseModel
 
 from langchain.agents import Tool, OpenAIFunctionsAgent, AgentExecutor
 from langchain.callbacks import AsyncIteratorCallbackHandler
@@ -21,9 +23,42 @@ logging.getLogger("openai").level = logging.DEBUG
 
 # just a sample tool to showcase how you can create your own set of tools
 @tool
-def clock():
+def clock() -> str:
     """gets the current time"""
     return str(datetime.datetime.now())
+
+
+class AgentAction(enum.Enum):
+    MESSAGE = "message"
+    CLICK = "click"
+    FILL = "fill"
+    GOTO = "goto"
+
+
+class AgentStep(BaseModel):
+    action: AgentAction
+    selector: Optional[str] = None
+    value: Optional[str] = None
+
+
+class AgentFlow(BaseModel):
+    steps: List[AgentStep]
+
+    @staticmethod
+    def message(text: str) -> 'AgentFlow':
+        return AgentFlow(steps=[AgentStep(action=AgentAction.MESSAGE, value=text)])
+
+
+# a sample tool to showcase how you can automate navigation in the browser
+@tool(return_direct=True)
+def contact_abstracta(full_name: str) -> str:
+    """navigates to abstracta.us and fills the contact form with the given full name"""
+    return AgentFlow(steps=[
+        AgentStep(action=AgentAction.GOTO, value='https://abstracta.us'),
+        AgentStep(action=AgentAction.CLICK, selector='xpath://a[@href="./contact-us"]'),
+        AgentStep(action=AgentAction.FILL, selector='#fullname', value=full_name),
+        AgentStep(action=AgentAction.MESSAGE, value="I have filled the contact form with your name.")
+    ]).model_dump_json()
 
 
 class Agent:
@@ -33,7 +68,7 @@ class Agent:
         message_history = FileChatMessageHistory(get_session_path(session.id) + "/chat_history.json")
         self._memory = ConversationBufferMemory(memory_key="chat_history", chat_memory=message_history,
                                                 return_messages=True)
-        self._agent = self._build_agent(self._memory, [clock])
+        self._agent = self._build_agent(self._memory, [clock, contact_abstracta])
 
     def _build_agent(self, memory: ConversationBufferMemory, tools: List[Tool]) -> AgentExecutor:
         llm = self._build_llm()
@@ -82,7 +117,7 @@ class Agent:
                                                  language=language)
         return ret.text
 
-    async def ask(self, question: str) -> AsyncIterator[str]:
+    async def ask(self, question: str) -> AsyncIterator[AgentFlow | str]:
         callback = AsyncIteratorCallbackHandler()
         task = asyncio.create_task(self._agent.arun(input=question, callbacks=[callback]))
         resp = ""
@@ -93,4 +128,10 @@ class Agent:
         # when using tools tokens are not passed to the callback handler, so we need to get the response directly from
         # agent run call
         if ret != resp:
+            if ret.startswith("{\"steps\":"):
+                try:
+                    yield AgentFlow.model_validate_json(ret)
+                except Exception as e:
+                    logging.exception("Error parsing agent response", e)
+                    yield ret
             yield ret

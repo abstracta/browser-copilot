@@ -42,7 +42,7 @@ export async function* fetchStreamJson(url: string, options?: RequestInit): Asyn
   }
 }
 
-async function* fetchSSEStream(resp: Response, url: string, options?: RequestInit): AsyncIterable<string> {
+async function* fetchSSEStream(resp: Response, url: string, options?: RequestInit): AsyncIterable<any> {
   let reader = resp.body!.getReader()
   let done = false
   while (!done) {
@@ -54,10 +54,9 @@ async function* fetchSSEStream(resp: Response, url: string, options?: RequestIni
         console.warn(`Problem while reading stream response from ${options?.method ? options.method : 'GET'} ${url}`, event)
         throw new HttpServiceError()
       }
-      if (event.event === "navigation") {
-        yield JSON.stringify({ "flowKey": event.data })
-      }
-      else {
+      if (event.event) {
+        yield JSON.parse(event.data)
+      } else {
         yield event.data
       }
     }

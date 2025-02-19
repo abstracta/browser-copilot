@@ -2,6 +2,8 @@
 
 This is an agent example that integrates with OpenAI (or Azure OpenAI) and provides a similar basic experience to ChatGPT, including authentication, proper session handling, response streaming and transcripts support.
 
+This agent also provides an example on how to automate basic flows with the copilot, providing an example automation to navigate to abstracta.us contact site and filling the full name field. 
+
 It is developed using the following:
 
 * [FastAPI](https://fastapi.tiangolo.com/)

@@ -9,7 +9,6 @@
     "build": "vue-tsc && vite build"
   },
   "dependencies": {
-    "ai-circle": "github:santiagomorelle/ai-circle",
     "autoprefixer": "^10.4.20",
     "echarts": "^5.5.1",
     "markdown-it-plantuml": "^1.4.1",

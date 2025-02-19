@@ -9,7 +9,7 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from sse_starlette.sse import ServerSentEvent
 
-from gpt_agent.agent import Agent
+from gpt_agent.agent import Agent, AgentAction
 from gpt_agent.auth import get_current_user
 from gpt_agent.domain import Session, Question, TranscriptionQuestion, SessionBase
 from gpt_agent.file_system_repos import SessionsRepository, QuestionsRepository, TranscriptionsRepository
@@ -75,13 +75,17 @@ async def _find_session(session_id: str, user: str) -> Session:
     return ret
 
 
-async def agent_response_stream(req: QuestionRequest, session: Session) -> AsyncIterator[str]:
+async def agent_response_stream(req: QuestionRequest, session: Session) -> AsyncIterator[bytes]:
     try:
         answer_stream = Agent(session).ask(req.question)
         complete_answer = ""
         async for token in answer_stream:
-            complete_answer = complete_answer + token
-            yield ServerSentEvent(data=token).encode()
+            if isinstance(token, str):
+                complete_answer = complete_answer + token
+                yield ServerSentEvent(data=token).encode()
+            else:
+                complete_answer = complete_answer + token.model_dump_json()
+                yield ServerSentEvent(event="flow", data=token.model_dump_json()).encode()
         ret = Question(question=req.question, answer=complete_answer, session=session)
         await questions_repo.save_question(ret)
     except Exception as e:

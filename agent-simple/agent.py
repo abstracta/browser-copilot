@@ -1,18 +1,17 @@
 import datetime
 import os
-from typing import List, Optional
 import uuid
-
-from fastapi import FastAPI, status
-from fastapi.responses import FileResponse, Response
-from langchain.agents.agent_toolkits import create_conversational_retrieval_agent
-from langchain.tools import tool
-from langchain_community.chat_models import ChatOpenAI
-from pydantic import BaseModel, Field
+from typing import List, Optional
 
 import dotenv
 import uvicorn
-
+from fastapi import FastAPI, status
+from fastapi.responses import FileResponse, Response
+from langchain.agents import AgentExecutor
+from langchain.agents.agent_toolkits import create_conversational_retrieval_agent
+from langchain.tools import tool
+from langchain_community.chat_models import ChatOpenAI, AzureChatOpenAI
+from pydantic import BaseModel, Field
 
 app = FastAPI()
 
@@ -45,8 +44,13 @@ class QuestionRequest(BaseModel):
     question: Optional[str] = ""
 
 
+class AgentStep(BaseModel):
+    action: str = "message"
+    value: str
+
+
 class QuestionResponse(BaseModel):
-    answer: str
+    steps: List[AgentStep]
 
 
 @tool
@@ -55,14 +59,15 @@ def clock():
     return str(datetime.datetime.now())
 
 
-llm = ChatOpenAI(model_name=os.getenv("MODEL_NAME"), temperature=0.7, verbose=True, streaming=True)
-agent = create_conversational_retrieval_agent(llm, [clock], max_iterations=3)
-
-
 @app.post('/sessions/{session_id}/questions', status_code=status.HTTP_200_OK)
 async def answer_question(session_id: str, req: QuestionRequest) -> QuestionResponse:
-    resp = agent.invoke(req.question)
-    return QuestionResponse(answer=resp['output'])
+    resp = build_agent().invoke(req.question)
+    return QuestionResponse(steps=[AgentStep(value=resp['output'])])
+
+
+def build_agent() -> AgentExecutor:
+    llm = ChatOpenAI(model_name=os.getenv("MODEL_NAME"), temperature=0.7, verbose=True, streaming=True)
+    return create_conversational_retrieval_agent(llm, [clock], max_iterations=3)
 
 
 if __name__ == "__main__":

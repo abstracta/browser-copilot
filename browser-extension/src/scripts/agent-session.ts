@@ -1,8 +1,9 @@
 import browser from "webextension-polyfill"
-import { Agent, AgentRuleCondition, AddHeaderRuleAction, RecordInteractionRuleAction, RequestEvent, RequestEventType } from "./agent"
+import { Agent, AgentRuleCondition, AddHeaderRuleAction, RecordInteractionRuleAction, RequestEvent } from "./agent"
 import { AuthService } from "./auth"
 import { HttpServiceError, fetchJson } from "./http"
 import { BrowserMessage, InteractionSummary } from "./browser-message"
+import { FlowExecutor } from "./flow"
 
 export class AgentSession {
   tabId: number
@@ -10,7 +11,7 @@ export class AgentSession {
   url: string
   id?: string
   authService?: AuthService
-  pollId?: number | NodeJS.Timeout
+  pollId?: number
 
   constructor(tabId: number, agent: Agent, url: string, id?: string, pollId?: number) {
     this.id = id
@@ -136,33 +137,30 @@ export class AgentSession {
     }
   }
 
-  private async handleNavigation(key: string) {
-    const message = { key: JSON.parse(key)["flowKey"] }
-    
-    browser.tabs.sendMessage(this.tabId, {data: message, type: "navigation"}).then((response) => {
-      if (response.type === "flowStatus") {
-          // Acá se puede hacer algo después de la navegación.
-      }
-    }).catch(error => {
-      console.error("Error Executing Navigation", error)
-    })
-  }
-
-  public async processUserMessage(text: string, file: Record<string, string>, msgHandler: (text: string, complete: boolean, success: boolean) => void) {
+  public async processUserMessage(text: string, file: Record<string, string>, msgHandler: (text: string, complete: boolean) => void, errorHandler: (error: any) => void) {
     try {
       if (file.data) {
         text = await this.agent.transcriptAudio(file.data, this.id!, this.authService);
       }
       const ret = this.agent.ask(text, this.id!, this.authService)
       for await (const part of ret) {
-        const isFlow = part.includes("flowKey")
-        isFlow && this.handleNavigation(part)
-        !isFlow && msgHandler(part, false, true)
+        if (typeof part === "string") {
+          msgHandler(part, false)
+        } else {
+          await new FlowExecutor(this.tabId, msgHandler).runFlow(part.steps)
+        }
       }
-      msgHandler("", true, true)
+      msgHandler("", true)
     } catch (e) {
-      // exceptions from http methods are already logged so no need to handle them
-      msgHandler((e instanceof HttpServiceError ? e.detail : undefined) || "", true, false)
+      errorHandler(e)
+    }
+  }
+
+  public async resumeFlow(msgHandler: (text: string, complete: boolean) => void, errorHandler: (error: any) => void) {
+    try {
+      await new FlowExecutor(this.tabId, msgHandler).resumeFlow()
+    } catch (e) {
+      errorHandler(e)
     }
   }
 
