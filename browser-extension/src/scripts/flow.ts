@@ -57,6 +57,8 @@ export class FlowExecutor {
         } else {
           await this.runStepInContentScript(steps[i]);
           await this.saveState(steps, i + 1);
+          // we wait some time in case a redirect is generated to avoid running any step that might not properly execute (in particular adding messages that never show, or never complete while resuming a flow)
+          await this.wait(500);
         }
       }
       await this.clearState();
