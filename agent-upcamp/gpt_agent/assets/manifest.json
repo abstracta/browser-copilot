@@ -1,0 +1,22 @@
+{
+  "id": "upcamp",
+  "name": "UpCamp Agent",
+  {% if openid_url %}
+  "auth": {
+    "url": "{{ openid_url }}",
+    "clientId": "{{ openid_client_id }}",
+    "scope": "{{ openid_scope }}"
+  },
+  {% endif %}
+  "capabilities": [ "transcripts" ],
+  "welcomeMessage": "¡Hola! Soy tu asistente de UpCamp.\n\nPuedo ayudarte a mejorar código, documentar APIs, explicar conceptos técnicos, generar casos de prueba, analizar errores y superar obstáculos en tus proyectos.\n\nRecuerda que tipeando / puedes acceder a los prompts \n\n ¿En qué te puedo asistir hoy?",
+  "prompts": [
+      { "name" : "Mejorar Código", "text" : "Explícame este fragmento de código y cómo podría mejorarlo: ${input}" },
+      { "name" : "Documentación API", "text" : "Necesito crear una documentación clara para esta API: ${input}. ¿Puedes ayudarme con una estructura y ejemplos?" },
+      { "name" : "Explicar Concepto", "text" : "¿Puedes explicarme de manera simple cómo funciona ${input} y darme un ejemplo práctico?" },
+      { "name" : "Generar Casos de Prueba", "text" : "Necesito escribir casos de prueba para esta función : ${input}. ¿Puedes ayudarme con ejemplos de casos de prueba que cubran diferentes escenarios utilizando la tecnica de clases de equivelencia?" },
+      { "name" : "Analizar Error", "text" : "Estoy recibiendo este error : ${input}. ¿Puedes ayudarme a entender qué significa y cómo solucionarlo?" },
+      { "name" : "Ayuda con Bloqueos", "text" : "Estoy atascado tratando de implementar ${input} con el enfoque actual que tengo. ¿Qué alternativas o mejores prácticas me sugieres?" }
+  ],
+  "contactEmail": "{{ contact_email }}"
+}
