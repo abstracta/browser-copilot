@@ -1,6 +1,6 @@
 # UpCamp Agent
 
-This is an agent example for **supporting non-experienced workers in their daily activities** based on the [agent-extended](../agent-extended/README.md), which integrates with OpenAI (or Azure OpenAI) and provides a similar basic experience to ChatGPT, including authentication, proper session handling, response streaming and transcripts support.
+This is an example agent for **supporting non-experienced workers in their daily activities** based on the [agent-extended](../agent-extended/README.md), which integrates with OpenAI (or Azure OpenAI) and provides a similar basic experience to ChatGPT, including authentication, proper session handling, response streaming and transcripts support.
 
 It is developed using the following:
 
@@ -8,16 +8,6 @@ It is developed using the following:
 * [LangChain](https://www.langchain.com/)
 * [Poetry](https://python-poetry.org/)
 
-## Agent Requirements
-
-To develop an agent compatible with the browser extension, you just have to define 4 endpoints:
-
-1. An `manifest.json` endpoint: This endpoint provides metadata about the agent. You can find an example in the [included manifest file](./gpt_agent/assets/manifest.json).
-2. A `logo.png` endpoint: This provides the logo that is displayed in the browser extension.
-3. Session creation endpoint: Each browser tab creates a separate session, containing messages and relevant context for the agent active in that tab.
-4. Question answering endpoint: This endpoint is queried by the browser extension to obtain the appropriate answer from the agent for each user message in the chat.
-
-## More about this agent
 The agent is configured with a system prompt aimed to help workers with their daily tasks. This prompt can be modified to suit your needs by editing the system prompt variable in the environment's variables (for references check the `SYSTEM_PROMPT` variable in the [sample.env](./sample.env) file).
 
 The agent is also provisioned with six prompts to facilitate the user interaction and foster its usage. You could add more by editing the prompts collection in the [manifest.json](./gpt_agent/assets/manifest.json), but bear in mind that if you want to use more advanced or larger prompts it could be a good idea to create a separate agent for a specific purpose and use the `SYSTEM_PROMPT` variable to instruct the agent.
@@ -28,6 +18,7 @@ As mentioned before, you could use this agent to chat and iterate over problems 
 ### 2. Use Predefined Prompts
 You can access the prompts list by typing `/`, and selecting the prompt you want to use. All the prompts in this example have an input variable which makes the cursor automatically placed where the user should fill in the proper input.
 
+![demo](./demo.gif)
 
 ## Other capabilities
 ### Authentication
@@ -41,24 +32,6 @@ Including in `manifest.json` an `auth` section with the following properties wil
 * `scopes`: the scopes required for your copilot. Check [sample.env](./sample.env) for some examples.
 
 Provided [sample.env](./sample.env) includes configurations for using Keycloak or Microsoft Entra ID.
-
-### Transcripts
-
-If you want your agent users to be able to ask questions by recording audios you can just add `"capabilities": ["transcript"]` to your `manifest.json` and implement a `sessions/${SESSION_ID}/transcripts` endpoint that recieves a request like the following:
-
-```json
-{
-    "file": "as545asd" // This is the base64 encoding of the audio file
-}
-```
-
-and answers with an answer like this one:
-
-```json
-{
-    "text": "Hello my friend" // This is the transcribed message
-}
-```
 
 #### Microsoft Entra ID
 
