@@ -2,6 +2,8 @@
 
 This is an example agent for **supporting non-experienced workers in their daily activities** based on the [agent-extended](../agent-extended/README.md), which integrates with OpenAI (or Azure OpenAI) and provides a similar basic experience to ChatGPT, including authentication, proper session handling, response streaming and transcripts support.
 
+> **Important:** Before using this tool, please read our [Responsible Use Notice](./disclaimer.md) regarding legal and ethical considerations.
+
 It is developed using the following:
 
 * [FastAPI](https://fastapi.tiangolo.com/)
