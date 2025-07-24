@@ -1,3 +1,7 @@
+<script lang="ts" setup>
+defineProps<{ minimized?: boolean }>()
+</script>
+
 <template>
     <div class="h-full flex flex-col">
         <div>
@@ -7,13 +11,13 @@
                     <slot name="headerActions" />
                 </div>
             </div>
-            <div class="border-t border-gray-300 absolute left-0 right-0"></div>
+            <div v-if="!minimized" class="border-t border-gray-300 absolute left-0 right-0"></div>
         </div>
-        <main class="flex-grow overflow-y-auto overflow-x-hidden p-3">
+        <main v-if="!minimized" class="flex-grow overflow-y-auto overflow-x-hidden p-3">
             <slot name="content" />
         </main>
         <slot name="modalsContainer" />
-        <footer class="self-center">
+        <footer v-if="!minimized" class="self-center">
             <div class="border-t border-gray-300 absolute left-0 right-0"></div>
             <div class="flex justify-center items-end h-full">
                 <a href="https://github.com/abstracta/browser-copilot" target="_blank" rel="noopener noreferrer">

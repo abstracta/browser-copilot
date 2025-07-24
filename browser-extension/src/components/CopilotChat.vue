@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, nextTick, watch, computed } from 'vue'
-import { SettingsIcon } from 'vue-tabler-icons'
+import { SettingsIcon, MinusIcon, MaximizeIcon } from 'vue-tabler-icons'
 import { ChatMessage } from '../scripts/tab-state'
 import CopilotName from './CopilotName.vue'
 import Message from './Message.vue'
@@ -9,10 +9,11 @@ import CopilotConfig from './CopilotConfig.vue'
 import PageOverlay from './PageOverlay.vue'
 import BtnClose from './BtnClose.vue'
 
-const props = defineProps<{ agentId: string, agentName: string, agentLogo: string, agentCapabilities: string[], messages: ChatMessage[] }>()
+const props = defineProps<{ agentId: string, agentName: string, agentLogo: string, agentCapabilities: string[], messages: ChatMessage[], minimized?: boolean }>()
 const emit = defineEmits<{
   (e: 'close'): void,
-  (e: 'userMessage', text: string, file: Record<string, string>): void
+  (e: 'userMessage', text: string, file: Record<string, string>): void,
+  (e: 'minimize'): void,
 }>()
 
 const messagesDiv = ref<HTMLDivElement>()
@@ -36,7 +37,7 @@ const lastMessage = computed((): ChatMessage => props.messages[props.messages.le
 </script>
 
 <template>
-  <PageOverlay>
+  <PageOverlay :minimized="minimized">
     <template v-slot:headerContent>
       <img :src="agentLogo" class="w-7 h-7" />
       <div class="text-xl font-semibold">
@@ -44,8 +45,12 @@ const lastMessage = computed((): ChatMessage => props.messages[props.messages.le
       </div>
     </template>
     <template v-slot:headerActions>
-      <button @click="showConfig = true"><settings-icon /></button>
-      <BtnClose @click="$emit('close')" />
+      <button v-if="!minimized" @click="showConfig = true"><settings-icon /></button>
+      <button @click.stop="$emit('minimize')">
+        <minus-icon v-if="!minimized" />
+        <maximize-icon v-else />
+      </button>
+      <BtnClose v-if="!minimized" @click="$emit('close')" />
     </template>
     <template v-slot:content>
       <div class="h-full flex flex-col">
