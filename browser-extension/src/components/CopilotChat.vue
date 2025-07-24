@@ -14,6 +14,7 @@ const emit = defineEmits<{
   (e: 'close'): void,
   (e: 'userMessage', text: string, file: Record<string, string>): void,
   (e: 'minimize'): void,
+  (e: 'clearChat'): void
 }>()
 
 const messagesDiv = ref<HTMLDivElement>()
@@ -64,7 +65,7 @@ const lastMessage = computed((): ChatMessage => props.messages[props.messages.le
     </template>
     <template v-slot:modalsContainer>
       <CopilotConfig :show="showConfig" :agent-id="agentId" :agent-name="agentName" :agent-logo="agentLogo"
-        @close="showConfig = false" />
+        @close="showConfig = false" @clear-chat="$emit('clearChat')" />
     </template>
   </PageOverlay>
 </template>
