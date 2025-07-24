@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, onBeforeMount, onBeforeUnmount, toRaw } from 'vue'
+import { ref, onBeforeMount, onBeforeUnmount, toRaw, computed } from 'vue'
 import browser from 'webextension-polyfill'
 import { useToast } from 'vue-toastification'
 import { AlertCircleFilledIcon } from 'vue-tabler-icons'
@@ -24,6 +24,7 @@ let displaying = false
 const minSidebarSize = 200
 let lastResizePos = 0
 const messages = ref<ChatMessage[]>([])
+const isMinimized = ref(false)
 
 onBeforeMount(async () => {
   await restoreTabState()
@@ -130,7 +131,12 @@ const onEndResize = () => {
 
 const onCloseSidebar = () => {
   displaying = false
+  isMinimized.value = false
   resizeSidebar(0)
+}
+
+const onMinimizeSidebar = () => {
+  isMinimized.value = !isMinimized.value
 }
 
 const onActivateAgent = async (agentId: string) => {
@@ -193,16 +199,21 @@ const onAgentError = (error: any) => {
     messages.value.push(ChatMessage.agentErrorMessage(text))
   }
 }
+
+const sidebarClasses = computed(() => [
+  'fixed flex flex-col bg-white border border-gray-300',
+  isMinimized.value 
+    ? 'bottom-4 right-4 w-80 rounded-xl shadow-lg cursor-pointer hover:shadow-xl transition-shadow'
+    : 'm-2 -left-2 w-full h-[calc(100%-16px)] rounded-tl-3xl rounded-bl-3xl'
+])
 </script>
 
 <template>
-  <div
-    class="fixed flex flex-col -left-2 m-2 w-full h-[calc(100%_-_16px)] justify-left border border-gray-300 bg-white rounded-tl-3xl rounded-bl-3xl"
-    id="sidebar">
-    <div class="absolute left-0 z-auto cursor-ew-resize w-2 h-full" @mousedown="onStartResize" />
+  <div :class="sidebarClasses" id="sidebar" @click="isMinimized && onMinimizeSidebar">
+    <div v-if="!isMinimized" class="absolute left-0 z-auto cursor-ew-resize w-2 h-full" @mousedown="onStartResize" />
     <CopilotChat v-if="agent" :messages="messages" :agent-id="agent.manifest.id" :agent-name="agent.manifest.name"
       :agent-logo="agent.logo" :agent-capabilities="agent.manifest.capabilities || []" @userMessage="onUserMessage"
-      @close="onCloseSidebar" />
+      @close="onCloseSidebar" @minimize="onMinimizeSidebar" :minimized="isMinimized" />
     <CopilotList v-if="!agent" @activateAgent="onActivateAgent" @close="onCloseSidebar" />
   </div>
 </template>
