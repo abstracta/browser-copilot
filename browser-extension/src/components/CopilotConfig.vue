@@ -7,9 +7,10 @@ import Modal from './Modal.vue'
 import ModalForm from './ModalForm.vue'
 import PromptEditor from './PromptEditor.vue'
 import NewPromptButton from './NewPromptButton.vue'
+import ClearChatButton from './ClearChatButton.vue'
 
 const props = defineProps<{ agentId: string, agentName: string, agentLogo: string, show: boolean }>()
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'clearChat'])
 const { t } = useI18n()
 const prompts = ref<Prompt[]>()
 const editingPrompt = ref<Prompt>()
@@ -60,6 +61,11 @@ const confirmPromptRemoval = async () => {
   prompts.value?.splice(deletingPromptIndex.value, 1)
   closePromptDeletionConfirmation()
 }
+
+const clearChat = () => {
+  emit('clearChat')
+  close()
+}
 </script>
 
 <template>
@@ -69,6 +75,7 @@ const confirmPromptRemoval = async () => {
         <div class="flex-auto self-center cursor-pointer p-1" @click="editingPrompt = prompt">{{ prompt.name }}</div>
         <button @click="removePrompt(index)"><trash-x-icon class="action-icon" /></button>
       </div>
+    <ClearChatButton @clear-chat="clearChat" />
   </Modal>
   <PromptEditor :name="editingPrompt?.name || ''" :text="editingPrompt?.text || ''" @close="closePromptEditor"
     @saved="onPromptUpdate" :show="editingPrompt !== undefined" :agent-id="agentId" />

@@ -200,6 +200,14 @@ const onAgentError = (error: any) => {
   }
 }
 
+const onClearChat = () => {
+  messages.value = []
+
+  if (messages.value.length === 0 && agent.value) {
+    messages.value.push(ChatMessage.agentMessage(agent.value.manifest.welcomeMessage))
+  }
+}
+
 const sidebarClasses = computed(() => [
   'fixed flex flex-col bg-white border border-gray-300',
   isMinimized.value 
@@ -213,7 +221,7 @@ const sidebarClasses = computed(() => [
     <div v-if="!isMinimized" class="absolute left-0 z-auto cursor-ew-resize w-2 h-full" @mousedown="onStartResize" />
     <CopilotChat v-if="agent" :messages="messages" :agent-id="agent.manifest.id" :agent-name="agent.manifest.name"
       :agent-logo="agent.logo" :agent-capabilities="agent.manifest.capabilities || []" @userMessage="onUserMessage"
-      @close="onCloseSidebar" @minimize="onMinimizeSidebar" :minimized="isMinimized" />
+      @close="onCloseSidebar" @minimize="onMinimizeSidebar" :minimized="isMinimized" @clear-chat="onClearChat" />
     <CopilotList v-if="!agent" @activateAgent="onActivateAgent" @close="onCloseSidebar" />
   </div>
 </template>
