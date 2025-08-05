@@ -4,7 +4,7 @@ import browser from 'webextension-polyfill'
 import { useToast } from 'vue-toastification'
 import { AlertCircleFilledIcon } from 'vue-tabler-icons'
 import { useI18n } from 'vue-i18n'
-import { BrowserMessage, ActiveTabListener, ToggleSidebar, ActivateAgent, AgentActivation, InteractionSummary, ResizeSidebar } from '../scripts/browser-message'
+import { BrowserMessage, ActiveTabListener, ToggleSidebar, ActivateAgent, AgentActivation, InteractionSummary, ResizeSidebar, UpdateIframe } from '../scripts/browser-message'
 import { Agent } from '../scripts/agent'
 import { TabState, ChatMessage } from '../scripts/tab-state'
 import { findTabState, saveTabState } from '../scripts/tab-state-repository'
@@ -135,8 +135,16 @@ const onCloseSidebar = () => {
   resizeSidebar(0)
 }
 
-const onMinimizeSidebar = () => {
+const onMinimizeSidebar = async () => {
   isMinimized.value = !isMinimized.value
+  
+  browser.tabs.sendMessage(
+    await getCurrentTabId(),
+    new UpdateIframe(
+      isMinimized.value ? "100px" : "100%",
+      isMinimized.value ? "bottom" : "top"
+    )
+  )
 }
 
 const onActivateAgent = async (agentId: string) => {
