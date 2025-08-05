@@ -22,6 +22,7 @@ const agent = ref<Agent>()
 let sidebarSize = 400
 let displaying = false
 const minSidebarSize = 200
+const minimizedSidebarSize = 300
 let lastResizePos = 0
 const messages = ref<ChatMessage[]>([])
 const isMinimized = ref(false)
@@ -145,6 +146,12 @@ const onMinimizeSidebar = async () => {
       isMinimized.value ? "bottom" : "top"
     )
   )
+
+  if (isMinimized.value) {
+    resizeSidebar(minimizedSidebarSize)
+  } else {
+    resizeSidebar(sidebarSize)
+  }
 }
 
 const onActivateAgent = async (agentId: string) => {
@@ -219,7 +226,7 @@ const onClearChat = () => {
 const sidebarClasses = computed(() => [
   'fixed flex flex-col bg-white border border-gray-300',
   isMinimized.value 
-    ? 'bottom-4 right-4 w-80 rounded-xl shadow-lg cursor-pointer hover:shadow-xl transition-shadow'
+    ? 'bottom-4 right-4 w-100 rounded-xl shadow-lg cursor-pointer hover:shadow-xl transition-shadow'
     : 'm-2 -left-2 w-full h-[calc(100%-16px)] rounded-tl-3xl rounded-bl-3xl'
 ])
 </script>
