@@ -86,6 +86,7 @@ export class AuthService {
     return {
       authority: authority,
       client_id: clientId,
+      redirect_uri: redirectUri,
       popup_redirect_uri: redirectUri,
       silent_redirect_uri: redirectUri,
       scope: scope,
