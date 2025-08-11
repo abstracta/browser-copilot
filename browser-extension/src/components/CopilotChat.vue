@@ -41,7 +41,7 @@ const lastMessage = computed((): ChatMessage => props.messages[props.messages.le
   <PageOverlay :minimized="minimized">
     <template v-slot:headerContent>
       <img :src="agentLogo" class="w-7 h-7" />
-      <div class="text-xl font-semibold">
+      <div v-if="!minimized" class="text-xl font-semibold">
         <CopilotName :agentName="agentName" />
       </div>
     </template>

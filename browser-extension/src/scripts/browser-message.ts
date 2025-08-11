@@ -54,14 +54,18 @@ export class ToggleSidebar extends BrowserMessage {
 
 export class ResizeSidebar extends BrowserMessage {
   size: number
+  height?: string
+  position?: "top" | "bottom"
 
-  constructor(size: number) {
+  constructor(size: number, height?: string, position?: "top" | "bottom") {
     super("resizeSidebar")
     this.size = size
+    this.height = height
+    this.position = position
   }
 
   public static fromJsonObject(obj: any): ResizeSidebar {
-    return new ResizeSidebar(obj.size)
+    return new ResizeSidebar(obj.size, obj.height, obj.position)
   }
 }
 

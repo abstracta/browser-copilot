@@ -22,6 +22,7 @@ const agent = ref<Agent>()
 let sidebarSize = 400
 let displaying = false
 const minSidebarSize = 200
+const minimizedSidebarSize = 120
 let lastResizePos = 0
 const messages = ref<ChatMessage[]>([])
 const isMinimized = ref(false)
@@ -96,8 +97,8 @@ const onToggleSidebar = () => {
   resizeSidebar(displaying ? sidebarSize : 0)
 }
 
-const resizeSidebar = async (size: number) => {
-  browser.tabs.sendMessage(await getCurrentTabId(), new ResizeSidebar(size))
+const resizeSidebar = async (size: number, height?: string, position?: "top" | "bottom") => {
+  browser.tabs.sendMessage(await getCurrentTabId(), new ResizeSidebar(size, height, position))
 }
 
 const getCurrentTabId = async (): Promise<number> => {
@@ -135,8 +136,14 @@ const onCloseSidebar = () => {
   resizeSidebar(0)
 }
 
-const onMinimizeSidebar = () => {
+const onMinimizeSidebar = async () => {
   isMinimized.value = !isMinimized.value
+  
+  if (isMinimized.value) {
+    resizeSidebar(minimizedSidebarSize, "100px", "bottom")
+  } else {
+    resizeSidebar(sidebarSize, "100%", "top")
+  }
 }
 
 const onActivateAgent = async (agentId: string) => {
@@ -211,7 +218,7 @@ const onClearChat = () => {
 const sidebarClasses = computed(() => [
   'fixed flex flex-col bg-white border border-gray-300',
   isMinimized.value 
-    ? 'bottom-4 right-4 w-80 rounded-xl shadow-lg cursor-pointer hover:shadow-xl transition-shadow'
+    ? 'bottom-4 right-4 w-100 rounded-xl shadow-lg cursor-pointer hover:shadow-xl transition-shadow'
     : 'm-2 -left-2 w-full h-[calc(100%-16px)] rounded-tl-3xl rounded-bl-3xl'
 ])
 </script>

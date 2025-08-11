@@ -2,11 +2,20 @@ import browser from "webextension-polyfill"
 import { BrowserMessage, ResizeSidebar, FlowStepExecution } from "./scripts/browser-message"
 import { FlowExecutor } from "./scripts/flow"
 
-function setSidebarIframeStyle(iframe: HTMLIFrameElement) {
+function setSidebarIframeStyle(iframe: HTMLIFrameElement, height: string = "100%", position: "top" | "bottom" = "top") {
     let style = iframe.style
-    style.height = "100%"
+    style.height = height
     style.position = "fixed"
-    style.top = "0px"
+    
+    style.top = ""
+    style.bottom = ""
+
+    if (position === "bottom") {
+        style.bottom = "0px"
+    } else {
+        style.top = "0px"
+    }
+
     style.right = "0px"
     style.zIndex = "2147483647"
     style.border = "0px"
@@ -42,6 +51,7 @@ browser.runtime.onMessage.addListener(async (m: any) => {
     let msg = BrowserMessage.fromJsonObject(m)
     if (msg instanceof ResizeSidebar) {
         resize(msg.size)
+        msg.height && msg.position && setSidebarIframeStyle(iframe, msg.height, msg.position)
     } else if (msg instanceof FlowStepExecution) {
         return await new FlowExecutor(0).runStep(msg.step)
     }
