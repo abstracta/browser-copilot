@@ -4,7 +4,7 @@ import browser from 'webextension-polyfill'
 import { useToast } from 'vue-toastification'
 import { AlertCircleFilledIcon } from 'vue-tabler-icons'
 import { useI18n } from 'vue-i18n'
-import { BrowserMessage, ActiveTabListener, ToggleSidebar, ActivateAgent, AgentActivation, InteractionSummary, ResizeSidebar, UpdateIframe } from '../scripts/browser-message'
+import { BrowserMessage, ActiveTabListener, ToggleSidebar, ActivateAgent, AgentActivation, InteractionSummary, ResizeSidebar } from '../scripts/browser-message'
 import { Agent } from '../scripts/agent'
 import { TabState, ChatMessage } from '../scripts/tab-state'
 import { findTabState, saveTabState } from '../scripts/tab-state-repository'
@@ -97,8 +97,8 @@ const onToggleSidebar = () => {
   resizeSidebar(displaying ? sidebarSize : 0)
 }
 
-const resizeSidebar = async (size: number) => {
-  browser.tabs.sendMessage(await getCurrentTabId(), new ResizeSidebar(size))
+const resizeSidebar = async (size: number, height?: string, position?: "top" | "bottom") => {
+  browser.tabs.sendMessage(await getCurrentTabId(), new ResizeSidebar(size, height, position))
 }
 
 const getCurrentTabId = async (): Promise<number> => {
@@ -139,18 +139,10 @@ const onCloseSidebar = () => {
 const onMinimizeSidebar = async () => {
   isMinimized.value = !isMinimized.value
   
-  browser.tabs.sendMessage(
-    await getCurrentTabId(),
-    new UpdateIframe(
-      isMinimized.value ? "100px" : "100%",
-      isMinimized.value ? "bottom" : "top"
-    )
-  )
-
   if (isMinimized.value) {
-    resizeSidebar(minimizedSidebarSize)
+    resizeSidebar(minimizedSidebarSize, "100px", "bottom")
   } else {
-    resizeSidebar(sidebarSize)
+    resizeSidebar(sidebarSize, "100%", "top")
   }
 }
 

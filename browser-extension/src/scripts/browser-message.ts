@@ -16,8 +16,6 @@ export abstract class BrowserMessage {
         return new ToggleSidebar()
       case "resizeSidebar":
         return ResizeSidebar.fromJsonObject(obj)
-      case "updateIframe":
-        return UpdateIframe.fromJsonObject(obj)
       case "activateAgent":
         return ActivateAgent.fromJsonObject(obj)
       case "agentActivation":
@@ -56,14 +54,18 @@ export class ToggleSidebar extends BrowserMessage {
 
 export class ResizeSidebar extends BrowserMessage {
   size: number
+  height?: string
+  position?: "top" | "bottom"
 
-  constructor(size: number) {
+  constructor(size: number, height?: string, position?: "top" | "bottom") {
     super("resizeSidebar")
     this.size = size
+    this.height = height
+    this.position = position
   }
 
   public static fromJsonObject(obj: any): ResizeSidebar {
-    return new ResizeSidebar(obj.size)
+    return new ResizeSidebar(obj.size, obj.height, obj.position)
   }
 }
 
@@ -122,20 +124,5 @@ export class FlowStepExecution extends BrowserMessage {
 
   public static fromJsonObject(obj: any): FlowStepExecution {
     return new FlowStepExecution(obj.step)
-  }
-}
-
-export class UpdateIframe extends BrowserMessage {
-  height: string
-  position: "top" | "bottom"
-
-  constructor(height: string, position: "top" | "bottom") {
-    super("updateIframe")
-    this.height = height
-    this.position = position
-  }
-
-  public static fromJsonObject(obj: any): UpdateIframe {
-    return new UpdateIframe(obj.height, obj.position)
   }
 }
