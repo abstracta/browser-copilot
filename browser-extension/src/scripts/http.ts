@@ -33,24 +33,20 @@ const fetchResponse = async (url: string, options?: RequestInit) => {
   return ret
 }
 
-export class HttpServiceError extends Error {
-  detail?: string
+function errorWithDetail<T extends new (...args: any[]) => any>(Base: T) {
+  return class extends Base {
+    detail?: string
 
-  constructor(detail?: string) {
-    super()
-    this.detail = detail
-  }
-
-}
-
-export class NetworkError extends TypeError {
-  detail?: string
-
-  constructor(detail?: string) {
-    super()
-    this.detail = detail
+    constructor(...args: any[]) {
+      super(args[0])
+      this.detail = args[0]
+    }
   }
 }
+
+export class HttpServiceError extends errorWithDetail(Error) {}
+
+export class NetworkError extends errorWithDetail(TypeError) {}
 
 export async function* fetchStreamJson(url: string, options?: RequestInit): AsyncIterable<any> {
   let resp = await fetchResponse(url, options)
