@@ -1,5 +1,3 @@
-import { NETWORK_ERROR } from "../constants"
-
 export const fetchJson = async (url: string, options?: RequestInit) => {
   let ret = await fetchResponse(url, options)
   return await ret.json()
@@ -12,8 +10,10 @@ const fetchResponse = async (url: string, options?: RequestInit) => {
     ret = await fetch(url, options)
   } catch (error) {
     // This handles the case where the user is temporarily disconnected from the internet
-    if (error instanceof TypeError && error.message.includes("Failed to fetch")) {
-      throw new NetworkError(NETWORK_ERROR)
+    const partialErrorMessage = "Failed to fetch"
+
+    if (error instanceof TypeError && error.message.includes(partialErrorMessage)) {
+      throw new NetworkError(partialErrorMessage)
     }
 
     throw error
@@ -33,20 +33,18 @@ const fetchResponse = async (url: string, options?: RequestInit) => {
   return ret
 }
 
-function errorWithDetail<T extends new (...args: any[]) => any>(Base: T) {
-  return class extends Base {
-    detail?: string
+class BaseError extends Error {
+  detail?: string
 
-    constructor(...args: any[]) {
-      super(args[0])
-      this.detail = args[0]
-    }
+  constructor(detail?: string) {
+    super()
+    this.detail = detail
   }
 }
 
-export class HttpServiceError extends errorWithDetail(Error) {}
+export class HttpServiceError extends BaseError {}
 
-export class NetworkError extends errorWithDetail(TypeError) {}
+export class NetworkError extends BaseError {}
 
 export async function* fetchStreamJson(url: string, options?: RequestInit): AsyncIterable<any> {
   let resp = await fetchResponse(url, options)

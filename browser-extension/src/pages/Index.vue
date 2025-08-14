@@ -14,7 +14,6 @@ import CopilotChat from '../components/CopilotChat.vue'
 import CopilotList from '../components/CopilotList.vue'
 import ToastMessage from '../components/ToastMessage.vue'
 import { HttpServiceError } from "../scripts/http"
-import { NETWORK_ERROR } from "../constants"
 
 const toast = useToast()
 const { t } = useI18n()
@@ -167,7 +166,7 @@ const onAgentActivation = (msg: AgentActivation) => {
 
 const onInteractionSummary = (msg: InteractionSummary) => {
   const text = msg.text 
-    ? (msg.text === NETWORK_ERROR ? t('networkError') : msg.text) 
+    ? (msg.text === "Failed to fetch" ? t('networkError') : msg.text) 
     : t('interactionSummaryError', { contactEmail: agent.value!.manifest.contactEmail })
   const lastMessage = messages.value[messages.value.length - 1]
   const messagePosition = lastMessage.isComplete ? messages.value.length : messages.value.length - 1
