@@ -165,9 +165,14 @@ const onAgentActivation = (msg: AgentActivation) => {
 }
 
 const onInteractionSummary = (msg: InteractionSummary) => {
-  const text = msg.text 
-    ? (msg.text === "Failed to fetch" ? t('networkError') : msg.text) 
-    : t('interactionSummaryError', { contactEmail: agent.value!.manifest.contactEmail })
+  let text = msg.text ?? ''
+
+  if (!msg.success) {
+      text = msg.errorType === 'NetworkError' ? t('networkError') : t('interactionSummaryError', {
+          contactEmail: agent.value!.manifest.contactEmail
+      })
+  }
+
   const lastMessage = messages.value[messages.value.length - 1]
   const messagePosition = lastMessage.isComplete ? messages.value.length : messages.value.length - 1
   messages.value.splice(messagePosition, 0, msg.success ? ChatMessage.agentMessage(text) : ChatMessage.agentErrorMessage(text))

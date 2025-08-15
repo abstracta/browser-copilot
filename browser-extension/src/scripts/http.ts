@@ -33,18 +33,27 @@ const fetchResponse = async (url: string, options?: RequestInit) => {
   return ret
 }
 
-class BaseError extends Error {
+export class BaseError extends Error {
   detail?: string
+  readonly type: string = 'BaseError'
 
   constructor(detail?: string) {
     super()
     this.detail = detail
   }
+
+  getType(): string {
+    return this.type
+  }
 }
 
-export class HttpServiceError extends BaseError {}
+export class HttpServiceError extends BaseError {
+  readonly type: string = 'HttpServiceError'
+}
 
-export class NetworkError extends BaseError {}
+export class NetworkError extends BaseError {
+  readonly type: string = 'NetworkError'
+}
 
 export async function* fetchStreamJson(url: string, options?: RequestInit): AsyncIterable<any> {
   let resp = await fetchResponse(url, options)

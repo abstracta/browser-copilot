@@ -102,15 +102,17 @@ export class AgentActivation extends BrowserMessage {
 export class InteractionSummary extends BrowserMessage {
   text?: string
   success: boolean
+  errorType?: string
 
-  constructor(success: boolean, text?: string) {
+  constructor(success: boolean, text?: string, errorType?: string) {
     super("interactionSummary")
     this.text = text
     this.success = success
+    this.errorType = errorType
   }
 
   public static fromJsonObject(obj: any): InteractionSummary {
-    return new InteractionSummary(obj.success, obj.text)
+    return new InteractionSummary(obj.success, obj.text, obj.errorType)
   }
 }
 
