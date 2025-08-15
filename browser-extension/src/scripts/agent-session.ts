@@ -105,7 +105,7 @@ export class AgentSession {
 
   private async pollInteraction(msgSender: (msg: BrowserMessage) => void) {
     try {
-      const summary = await this.agent.solveInteractionSummary(undefined, this.id!, this.authService)
+      const summary = await this.retryInteractionSummary(undefined, this.id!, this.authService)
       if (summary) {
         await msgSender(new InteractionSummary(true, summary))
       }
@@ -120,7 +120,7 @@ export class AgentSession {
     for (const a of actions) {
       if (a.recordInteraction) {
         const interactionDetail = await this.findInteraction(req, a.recordInteraction)
-        return await this.agent.solveInteractionSummary(interactionDetail, this.id!, this.authService)
+        return await this.retryInteractionSummary(interactionDetail, this.id!, this.authService)
       }
     }
   }
@@ -189,4 +189,23 @@ export class AgentSession {
     }
   }
 
+  private async retryInteractionSummary(interactionDetail: any | undefined, sessionId: string, authService?: AuthService, maxRetries = 2, delayMs = 5000): Promise<string | undefined> {
+    let attempts = 0
+    let lastError: any
+
+    while (attempts <= maxRetries) {
+      try {
+        return await this.agent.solveInteractionSummary(interactionDetail, sessionId, authService)
+      } catch (error) {
+        lastError = error
+        attempts++
+
+        if (attempts <= maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, delayMs))
+        }
+      }
+    }
+
+    throw lastError
+  }
 }

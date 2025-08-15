@@ -5,7 +5,7 @@ import { AgentSession } from "./scripts/agent-session";
 import { findAgentSession, saveAgentSession, removeAgentSession, } from "./scripts/agent-session-repository";
 import { saveAgentPrompts } from "./scripts/prompt-repository";
 import { BrowserMessage, ToggleSidebar, ActiveTabListener, ActivateAgent, AgentActivation, InteractionSummary, } from "./scripts/browser-message";
-import { HttpServiceError } from "./scripts/http";
+import { BaseError } from "./scripts/http";
 import { isActiveTabListener, setTabListenerActive, removeTabListenerStatus, } from "./scripts/tab-listener-status-repository";
 import { removeTabState } from "./scripts/tab-state-repository";
 
@@ -174,8 +174,9 @@ async function asyncProcessRequest(req: RequestEvent) {
       sendToTab(
         tabId,
         new InteractionSummary(
-          false,
-          e instanceof HttpServiceError ? e.detail : undefined
+          false, 
+          e instanceof BaseError ? e.detail : undefined,
+          e instanceof BaseError ? e.getType() : undefined
         )
       );
     }

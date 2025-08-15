@@ -4,7 +4,21 @@ export const fetchJson = async (url: string, options?: RequestInit) => {
 }
 
 const fetchResponse = async (url: string, options?: RequestInit) => {
-  let ret = await fetch(url, options)
+  let ret
+
+  try {
+    ret = await fetch(url, options)
+  } catch (error) {
+    // This handles the case where the user is temporarily disconnected from the internet
+    const partialErrorMessage = "Failed to fetch"
+
+    if (error instanceof TypeError && error.message.includes(partialErrorMessage)) {
+      throw new NetworkError(partialErrorMessage)
+    }
+
+    throw error
+  }
+  
   if (ret.status < 200 || ret.status >= 300) {
     let body = await ret.text()
     console.warn(`Problem with ${options?.method ? options.method : 'GET'} ${url}`, { status: ret.status, body: body })
@@ -19,14 +33,26 @@ const fetchResponse = async (url: string, options?: RequestInit) => {
   return ret
 }
 
-export class HttpServiceError extends Error {
+export class BaseError extends Error {
   detail?: string
+  readonly type: string = 'BaseError'
 
   constructor(detail?: string) {
     super()
     this.detail = detail
   }
 
+  getType(): string {
+    return this.type
+  }
+}
+
+export class HttpServiceError extends BaseError {
+  readonly type: string = 'HttpServiceError'
+}
+
+export class NetworkError extends BaseError {
+  readonly type: string = 'NetworkError'
 }
 
 export async function* fetchStreamJson(url: string, options?: RequestInit): AsyncIterable<any> {

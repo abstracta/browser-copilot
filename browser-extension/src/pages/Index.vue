@@ -165,7 +165,14 @@ const onAgentActivation = (msg: AgentActivation) => {
 }
 
 const onInteractionSummary = (msg: InteractionSummary) => {
-  const text = msg.text ? msg.text : t('interactionSummaryError', { contactEmail: agent.value!.manifest.contactEmail })
+  let text = msg.text ?? ''
+
+  if (!msg.success) {
+      text = msg.errorType === 'NetworkError' ? t('networkError') : t('interactionSummaryError', {
+          contactEmail: agent.value!.manifest.contactEmail
+      })
+  }
+
   const lastMessage = messages.value[messages.value.length - 1]
   const messagePosition = lastMessage.isComplete ? messages.value.length : messages.value.length - 1
   messages.value.splice(messagePosition, 0, msg.success ? ChatMessage.agentMessage(text) : ChatMessage.agentErrorMessage(text))
@@ -257,12 +264,14 @@ const sidebarClasses = computed(() => [
     "interactionSummaryError": "I could not process some information from the current site. This might impact the information and answers I provide. If the issue persists please contact [support](mailto:{contactEmail}?subject=Interaction%20issue)",
     "agentAnswerError": "I am currently unable to complete your request. You can try again and if the issue persists contact [support](mailto:{contactEmail}?subject=Question%20issue)",
     "flowStepMissingElement": "I could not find the element '{selector}'. This might be due to recent changes in the page which I am not aware of. Please try again and if the issue persists contact [support](mailto:{contactEmail}?subject=Navigation%20element).",
+    "networkError": "It seems there is a problem with the network connection. Please check your connection and try again."
   },
   "es": {
     "activationError": "No se pudo activar el Copiloto {agentName}. Puedes intentar de nuevo y si el problema persiste contactar al [soporte del Copiloto {agentName}](mailto:{contactEmail}?subject=Activation%20issue)",
     "interactionSummaryError": "No pude procesar informacion generada por la página actual. Esto puede impactar en la información y respuestas que te puedo dar. Si el problema persiste por favor contacta a [soporte](mailto:{contactEmail})?subject=Interaction%20issue",
     "agentAnswerError": "Ahora no puedo completar tu pedido. Puedes intentar de nuevo y si el problema persiste contactar a [soporte](mailto:{contactEmail}?subject=Question%20issue)",
-    "flowStepMissingElement": "No pude encontrar el elemento '{selector}'. Esto puede ser debido a cambios recientes en la página de los cuales no tengo conocimiento. Por favor intenta de nuevo y si el problema persiste contacta a [soporte](mailto:{contactEmail}?subject=Navigation%20element).", 
+    "flowStepMissingElement": "No pude encontrar el elemento '{selector}'. Esto puede ser debido a cambios recientes en la página de los cuales no tengo conocimiento. Por favor intenta de nuevo y si el problema persiste contacta a [soporte](mailto:{contactEmail}?subject=Navigation%20element).",
+    "networkError": "Parece que hay un problema con la conexión a la red. Por favor verifica tu conexión y vuelve a intentarlo."
   }
 }
 </i18n>
